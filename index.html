@@ -476,7 +476,7 @@ const FIREBASE_CONFIG = {
 };
 // ============================================================
 
-// Firebase SDK (Realtime Database)
+// Firebase SDK (compat – działa bez type="module")
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, update, remove, onValue, off }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -1063,6 +1063,25 @@ function recalcPoints() {
 }
 
 getState();
+
+// Eksportuj funkcje do globalnego scope (wymagane przy type="module")
+window.loginPlayer      = loginPlayer;
+window.loginAdmin       = loginAdmin;
+window.showAdminLogin   = showAdminLogin;
+window.showPlayerLogin  = showPlayerLogin;
+window.logout           = logout;
+window.showPage         = showPage;
+window.saveAllPredictions = saveAllPredictions;
+window.saveOfficialResults = saveOfficialResults;
+window.saveMatches      = saveMatches;
+window.removeMatch      = removeMatch;
+window.saveDisplayName  = saveDisplayName;
+window.approvePlayer    = approvePlayer;
+window.removePlayer     = removePlayer;
+window.renderTypowanie  = renderTypowanie;
+window.renderWyniki     = renderWyniki;
+window.renderMecze      = renderMecze;
+window.renderTabela     = renderTabela;
 </script>
 </body>
 </html>
