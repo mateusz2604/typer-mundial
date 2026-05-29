@@ -276,6 +276,7 @@ nav::-webkit-scrollbar { display: none; }
     <p class="page-title">⚡ <span>Wyniki</span></p>
     <div class="admin-banner">Wpisz oficjalne wyniki po meczach i przelicz punkty</div>
     <div id="officialResultsList"></div>
+    <button class="btn danger" onclick="resetAllResults()" style="width:100%;margin-top:12px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;letter-spacing:0;border-radius:8px;cursor:pointer;">🗑️ Resetuj wszystkie wyniki i punkty</button>
   </div>
 </div>
 
@@ -1096,6 +1097,16 @@ function renderWyniki(phase) {
     }) : '<p style="color:var(--muted);font-size:13px;">Brak meczów w tej fazie.</p>');
 }
 
+async function resetAllResults() {
+  if (!confirm('Czy na pewno chcesz usunąć WSZYSTKIE wyniki i punkty?\nTypowania graczy zostaną zachowane.')) return;
+  state.official = {};
+  state.points = {};
+  await fbRemove('official');
+  await fbRemove('points');
+  renderWyniki();
+  showToast('✓ Wszystkie wyniki i punkty usunięte!');
+}
+
 async function saveDisplayName(nick) {
   const val = document.getElementById('dn_'+nick)?.value.trim() || nick;
   if (!state.players[nick] || typeof state.players[nick]!=='object') state.players[nick]={status:'approved',displayName:nick};
@@ -1198,6 +1209,7 @@ getState();
 window.toggleRound        = toggleRound;
 window.stickyAction       = stickyAction;
 window.setStickyBar       = setStickyBar;
+window.resetAllResults    = resetAllResults;
 window.loginPlayer      = loginPlayer;
 window.loginAdmin       = loginAdmin;
 window.showAdminLogin   = showAdminLogin;
