@@ -947,11 +947,10 @@ function renderRanking() {
 function renderTabela() {
   const matches = getMatches();
   const official = state.official;
-  const KNOCKOUT_GROUPS = ['1/8','1/4','1/2','3.m.','Finał'];
 
-  // Tylko mecze grupowe (A–L)
+  // Tylko mecze fazy grupowej (phase==='group') i tylko grupy A–L (jeden znak)
   const groups = {};
-  matches.filter(m => !KNOCKOUT_GROUPS.includes(m.group)).forEach(m => {
+  matches.filter(m => m.phase === 'group' && /^[A-L]$/.test(m.group)).forEach(m => {
     const g = m.group || '?';
     if (!groups[g]) groups[g] = {};
     [m.home, m.away].forEach(team => {
