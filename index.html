@@ -1096,7 +1096,6 @@ function renderWyniki(phase) {
       return matchCard(m, off.h??'', off.a??'', false, false, null, true);
     }) : '<p style="color:var(--muted);font-size:13px;">Brak meczów w tej fazie.</p>');
 }
-}
 
 async function saveDisplayName(nick) {
   const val = document.getElementById('dn_'+nick)?.value.trim() || nick;
