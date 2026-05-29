@@ -298,7 +298,7 @@ let isAdmin = false;
 
 // Wszystkie 48 drużyn MŚ 2026 – potwierdzona lista
 const ALL_TEAMS = [
-  // CONCACAF (gospodarze + kwalifikacje)
+  // CONCACAF
   {name:'USA', flag:'🇺🇸'},
   {name:'Kanada', flag:'🇨🇦'},
   {name:'Meksyk', flag:'🇲🇽'},
@@ -328,10 +328,10 @@ const ALL_TEAMS = [
   {name:'Norwegia', flag:'🇳🇴'},
   {name:'Szwecja', flag:'🇸🇪'},
   {name:'Turcja', flag:'🇹🇷'},
-  {name:'Bośnia i Herc.', flag:'🇧🇦'},
+  {name:'Bośnia i Hercegovina', flag:'🇧🇦'},
   // AFC
   {name:'Japonia', flag:'🇯🇵'},
-  {name:'Korea Płd.', flag:'🇰🇷'},
+  {name:'Korea Południowa', flag:'🇰🇷'},
   {name:'Arabia Saudyjska', flag:'🇸🇦'},
   {name:'Australia', flag:'🇦🇺'},
   {name:'Iran', flag:'🇮🇷'},
@@ -347,12 +347,12 @@ const ALL_TEAMS = [
   {name:'Algieria', flag:'🇩🇿'},
   {name:'Tunezja', flag:'🇹🇳'},
   {name:'Wybrzeże Kości Słoniowej', flag:'🇨🇮'},
-  {name:'RPA', flag:'🇿🇦'},
-  {name:'Wyspy Zielone', flag:'🇨🇻'},
-  {name:'DR Kongo', flag:'🇨🇩'},
+  {name:'Republika Południowej Afryki', flag:'🇿🇦'},
+  {name:'Republika Zielonego Przylądka', flag:'🇨🇻'},
+  {name:'DR Konga', flag:'🇨🇩'},
   // OFC
   {name:'Nowa Zelandia', flag:'🇳🇿'},
-  // Polska – gospodarz grupy!
+  // Polska
   {name:'Polska', flag:'🇵🇱'},
 ];
 
@@ -372,91 +372,91 @@ function teamFlag(name) {
 // UWAGA: drużyny w fazie pucharowej wpisz ręcznie gdy znane będą pary
 // ============================================================
 let DEFAULT_MATCHES = [
-  // ── GRUPA A ──
-  {id:'gA1',date:'12.06',time:'18:00',group:'A',home:'Meksyk',away:'USA',phase:'group'},
-  {id:'gA2',date:'12.06',time:'21:00',group:'A',home:'Kanada',away:'Curaçao',phase:'group'},
-  {id:'gA3',date:'16.06',time:'18:00',group:'A',home:'Meksyk',away:'Kanada',phase:'group'},
-  {id:'gA4',date:'16.06',time:'21:00',group:'A',home:'USA',away:'Curaçao',phase:'group'},
-  {id:'gA5',date:'20.06',time:'21:00',group:'A',home:'USA',away:'Kanada',phase:'group'},
-  {id:'gA6',date:'20.06',time:'21:00',group:'A',home:'Meksyk',away:'Curaçao',phase:'group'},
-  // ── GRUPA B ──
-  {id:'gB1',date:'13.06',time:'18:00',group:'B',home:'Argentyna',away:'Maroko',phase:'group'},
-  {id:'gB2',date:'13.06',time:'21:00',group:'B',home:'Irak',away:'Ekwador',phase:'group'},
-  {id:'gB3',date:'17.06',time:'18:00',group:'B',home:'Argentyna',away:'Irak',phase:'group'},
-  {id:'gB4',date:'17.06',time:'21:00',group:'B',home:'Maroko',away:'Ekwador',phase:'group'},
-  {id:'gB5',date:'21.06',time:'21:00',group:'B',home:'Argentyna',away:'Ekwador',phase:'group'},
-  {id:'gB6',date:'21.06',time:'21:00',group:'B',home:'Maroko',away:'Irak',phase:'group'},
-  // ── GRUPA C ──
-  {id:'gC1',date:'13.06',time:'18:00',group:'C',home:'Brazylia',away:'Niemcy',phase:'group'},
-  {id:'gC2',date:'13.06',time:'21:00',group:'C',home:'Japonia',away:'Paragwaj',phase:'group'},
-  {id:'gC3',date:'17.06',time:'18:00',group:'C',home:'Brazylia',away:'Japonia',phase:'group'},
-  {id:'gC4',date:'17.06',time:'21:00',group:'C',home:'Niemcy',away:'Paragwaj',phase:'group'},
-  {id:'gC5',date:'21.06',time:'21:00',group:'C',home:'Brazylia',away:'Paragwaj',phase:'group'},
-  {id:'gC6',date:'21.06',time:'21:00',group:'C',home:'Niemcy',away:'Japonia',phase:'group'},
-  // ── GRUPA D ──
-  {id:'gD1',date:'14.06',time:'18:00',group:'D',home:'Francja',away:'Holandia',phase:'group'},
-  {id:'gD2',date:'14.06',time:'21:00',group:'D',home:'Senegal',away:'Panama',phase:'group'},
-  {id:'gD3',date:'18.06',time:'18:00',group:'D',home:'Francja',away:'Senegal',phase:'group'},
-  {id:'gD4',date:'18.06',time:'21:00',group:'D',home:'Holandia',away:'Panama',phase:'group'},
-  {id:'gD5',date:'22.06',time:'21:00',group:'D',home:'Francja',away:'Panama',phase:'group'},
-  {id:'gD6',date:'22.06',time:'21:00',group:'D',home:'Holandia',away:'Senegal',phase:'group'},
-  // ── GRUPA E ──
-  {id:'gE1',date:'14.06',time:'18:00',group:'E',home:'Polska',away:'Arabia Saudyjska',phase:'group'},
-  {id:'gE2',date:'14.06',time:'21:00',group:'E',home:'Anglia',away:'Tunezja',phase:'group'},
-  {id:'gE3',date:'18.06',time:'18:00',group:'E',home:'Polska',away:'Anglia',phase:'group'},
-  {id:'gE4',date:'18.06',time:'21:00',group:'E',home:'Arabia Saudyjska',away:'Tunezja',phase:'group'},
-  {id:'gE5',date:'22.06',time:'21:00',group:'E',home:'Polska',away:'Tunezja',phase:'group'},
-  {id:'gE6',date:'22.06',time:'21:00',group:'E',home:'Anglia',away:'Arabia Saudyjska',phase:'group'},
-  // ── GRUPA F ──
-  {id:'gF1',date:'15.06',time:'18:00',group:'F',home:'Portugalia',away:'Urugwaj',phase:'group'},
-  {id:'gF2',date:'15.06',time:'21:00',group:'F',home:'DR Kongo',away:'Belgia',phase:'group'},
-  {id:'gF3',date:'19.06',time:'18:00',group:'F',home:'Portugalia',away:'DR Kongo',phase:'group'},
-  {id:'gF4',date:'19.06',time:'21:00',group:'F',home:'Urugwaj',away:'Belgia',phase:'group'},
-  {id:'gF5',date:'23.06',time:'21:00',group:'F',home:'Portugalia',away:'Belgia',phase:'group'},
-  {id:'gF6',date:'23.06',time:'21:00',group:'F',home:'Urugwaj',away:'DR Kongo',phase:'group'},
-  // ── GRUPA G ──
-  {id:'gG1',date:'15.06',time:'18:00',group:'G',home:'Hiszpania',away:'Chorwacja',phase:'group'},
-  {id:'gG2',date:'15.06',time:'21:00',group:'G',home:'Maroko',away:'Iran',phase:'group'},
-  {id:'gG3',date:'19.06',time:'18:00',group:'G',home:'Hiszpania',away:'Maroko',phase:'group'},
-  {id:'gG4',date:'19.06',time:'21:00',group:'G',home:'Chorwacja',away:'Iran',phase:'group'},
-  {id:'gG5',date:'23.06',time:'21:00',group:'G',home:'Hiszpania',away:'Iran',phase:'group'},
-  {id:'gG6',date:'23.06',time:'21:00',group:'G',home:'Chorwacja',away:'Maroko',phase:'group'},
-  // ── GRUPA H ──
-  {id:'gH1',date:'16.06',time:'18:00',group:'H',home:'Argentyna',away:'Algieria',phase:'group'},
-  {id:'gH2',date:'16.06',time:'21:00',group:'H',home:'Szwajcaria',away:'Kanada',phase:'group'},
-  {id:'gH3',date:'20.06',time:'18:00',group:'H',home:'Argentyna',away:'Szwajcaria',phase:'group'},
-  {id:'gH4',date:'20.06',time:'21:00',group:'H',home:'Algieria',away:'Kanada',phase:'group'},
-  {id:'gH5',date:'24.06',time:'21:00',group:'H',home:'Argentyna',away:'Kanada',phase:'group'},
-  {id:'gH6',date:'24.06',time:'21:00',group:'H',home:'Algieria',away:'Szwajcaria',phase:'group'},
-  // ── GRUPA I ──
-  {id:'gI1',date:'16.06',time:'18:00',group:'I',home:'Japonia',away:'Korea Płd.',phase:'group'},
-  {id:'gI2',date:'16.06',time:'21:00',group:'I',home:'Australia',away:'Ghana',phase:'group'},
-  {id:'gI3',date:'20.06',time:'18:00',group:'I',home:'Japonia',away:'Australia',phase:'group'},
-  {id:'gI4',date:'20.06',time:'21:00',group:'I',home:'Korea Płd.',away:'Ghana',phase:'group'},
-  {id:'gI5',date:'24.06',time:'21:00',group:'I',home:'Japonia',away:'Ghana',phase:'group'},
-  {id:'gI6',date:'24.06',time:'21:00',group:'I',home:'Korea Płd.',away:'Australia',phase:'group'},
-  // ── GRUPA J ──
-  {id:'gJ1',date:'17.06',time:'18:00',group:'J',home:'Kolumbia',away:'Wyspy Zielone',phase:'group'},
-  {id:'gJ2',date:'17.06',time:'21:00',group:'J',home:'Katar',away:'Uzbekistan',phase:'group'},
-  {id:'gJ3',date:'21.06',time:'18:00',group:'J',home:'Kolumbia',away:'Katar',phase:'group'},
-  {id:'gJ4',date:'21.06',time:'21:00',group:'J',home:'Wyspy Zielone',away:'Uzbekistan',phase:'group'},
-  {id:'gJ5',date:'25.06',time:'21:00',group:'J',home:'Kolumbia',away:'Uzbekistan',phase:'group'},
-  {id:'gJ6',date:'25.06',time:'21:00',group:'J',home:'Katar',away:'Wyspy Zielone',phase:'group'},
-  // ── GRUPA K ──
-  {id:'gK1',date:'17.06',time:'18:00',group:'K',home:'Niemcy',away:'Szkocja',phase:'group'},
-  {id:'gK2',date:'17.06',time:'21:00',group:'K',home:'Nowa Zelandia',away:'Haiti',phase:'group'},
-  {id:'gK3',date:'21.06',time:'18:00',group:'K',home:'Niemcy',away:'Nowa Zelandia',phase:'group'},
-  {id:'gK4',date:'21.06',time:'21:00',group:'K',home:'Szkocja',away:'Haiti',phase:'group'},
-  {id:'gK5',date:'25.06',time:'21:00',group:'K',home:'Niemcy',away:'Haiti',phase:'group'},
-  {id:'gK6',date:'25.06',time:'21:00',group:'K',home:'Szkocja',away:'Nowa Zelandia',phase:'group'},
-  // ── GRUPA L ──
-  {id:'gL1',date:'18.06',time:'18:00',group:'L',home:'RPA',away:'Jordania',phase:'group'},
-  {id:'gL2',date:'18.06',time:'21:00',group:'L',home:'Tunezja',away:'Wybrzeże Kości Słoniowej',phase:'group'},
-  {id:'gL3',date:'22.06',time:'18:00',group:'L',home:'RPA',away:'Tunezja',phase:'group'},
-  {id:'gL4',date:'22.06',time:'21:00',group:'L',home:'Jordania',away:'Wybrzeże Kości Słoniowej',phase:'group'},
-  {id:'gL5',date:'26.06',time:'21:00',group:'L',home:'RPA',away:'Wybrzeże Kości Słoniowej',phase:'group'},
-  {id:'gL6',date:'26.06',time:'21:00',group:'L',home:'Jordania',away:'Tunezja',phase:'group'},
-  // ── 1/16 FINAŁU – 16 spotkań ──
+  // ── GRUPA A: Czechy, Meksyk, Rep. Południowej Afryki, Korea Południowa ──
+  {id:'gA1',date:'11.06',time:'21:00',group:'A',home:'Meksyk',away:'Republika Południowej Afryki',phase:'group'},
+  {id:'gA2',date:'12.06',time:'04:00',group:'A',home:'Korea Południowa',away:'Czechy',phase:'group'},
+  {id:'gA3',date:'18.06',time:'18:00',group:'A',home:'Czechy',away:'Republika Południowej Afryki',phase:'group'},
+  {id:'gA4',date:'19.06',time:'03:00',group:'A',home:'Meksyk',away:'Korea Południowa',phase:'group'},
+  {id:'gA5',date:'25.06',time:'03:00',group:'A',home:'Czechy',away:'Meksyk',phase:'group'},
+  {id:'gA6',date:'25.06',time:'03:00',group:'A',home:'Republika Południowej Afryki',away:'Korea Południowa',phase:'group'},
+  // ── GRUPA B: Szwajcaria, Bośnia i Hercegovina, Kanada, Katar ──
+  {id:'gB1',date:'12.06',time:'21:00',group:'B',home:'Kanada',away:'Bośnia i Hercegovina',phase:'group'},
+  {id:'gB2',date:'13.06',time:'21:00',group:'B',home:'Katar',away:'Szwajcaria',phase:'group'},
+  {id:'gB3',date:'18.06',time:'21:00',group:'B',home:'Szwajcaria',away:'Bośnia i Hercegovina',phase:'group'},
+  {id:'gB4',date:'19.06',time:'00:00',group:'B',home:'Kanada',away:'Katar',phase:'group'},
+  {id:'gB5',date:'24.06',time:'21:00',group:'B',home:'Bośnia i Hercegovina',away:'Katar',phase:'group'},
+  {id:'gB6',date:'24.06',time:'21:00',group:'B',home:'Szwajcaria',away:'Kanada',phase:'group'},
+  // ── GRUPA C: Szkocja, Brazylia, Haiti, Maroko ──
+  {id:'gC1',date:'14.06',time:'00:00',group:'C',home:'Brazylia',away:'Maroko',phase:'group'},
+  {id:'gC2',date:'14.06',time:'03:00',group:'C',home:'Haiti',away:'Szkocja',phase:'group'},
+  {id:'gC3',date:'20.06',time:'00:00',group:'C',home:'Szkocja',away:'Maroko',phase:'group'},
+  {id:'gC4',date:'20.06',time:'02:30',group:'C',home:'Brazylia',away:'Haiti',phase:'group'},
+  {id:'gC5',date:'25.06',time:'00:00',group:'C',home:'Maroko',away:'Haiti',phase:'group'},
+  {id:'gC6',date:'25.06',time:'00:00',group:'C',home:'Szkocja',away:'Brazylia',phase:'group'},
+  // ── GRUPA D: Turcja, Paragwaj, USA, Australia ──
+  {id:'gD1',date:'13.06',time:'03:00',group:'D',home:'USA',away:'Paragwaj',phase:'group'},
+  {id:'gD2',date:'14.06',time:'06:00',group:'D',home:'Australia',away:'Turcja',phase:'group'},
+  {id:'gD3',date:'19.06',time:'21:00',group:'D',home:'USA',away:'Australia',phase:'group'},
+  {id:'gD4',date:'20.06',time:'05:00',group:'D',home:'Turcja',away:'Paragwaj',phase:'group'},
+  {id:'gD5',date:'26.06',time:'04:00',group:'D',home:'Turcja',away:'USA',phase:'group'},
+  {id:'gD6',date:'26.06',time:'04:00',group:'D',home:'Paragwaj',away:'Australia',phase:'group'},
+  // ── GRUPA E: Niemcy, Ekwador, Wybrzeże Kości Słoniowej, Curaçao ──
+  {id:'gE1',date:'14.06',time:'19:00',group:'E',home:'Niemcy',away:'Curaçao',phase:'group'},
+  {id:'gE2',date:'15.06',time:'01:00',group:'E',home:'Wybrzeże Kości Słoniowej',away:'Ekwador',phase:'group'},
+  {id:'gE3',date:'20.06',time:'22:00',group:'E',home:'Niemcy',away:'Wybrzeże Kości Słoniowej',phase:'group'},
+  {id:'gE4',date:'21.06',time:'02:00',group:'E',home:'Ekwador',away:'Curaçao',phase:'group'},
+  {id:'gE5',date:'25.06',time:'22:00',group:'E',home:'Ekwador',away:'Niemcy',phase:'group'},
+  {id:'gE6',date:'25.06',time:'22:00',group:'E',home:'Curaçao',away:'Wybrzeże Kości Słoniowej',phase:'group'},
+  // ── GRUPA F: Szwecja, Holandia, Tunezja, Japonia ──
+  {id:'gF1',date:'14.06',time:'22:00',group:'F',home:'Holandia',away:'Japonia',phase:'group'},
+  {id:'gF2',date:'15.06',time:'04:00',group:'F',home:'Szwecja',away:'Tunezja',phase:'group'},
+  {id:'gF3',date:'20.06',time:'19:00',group:'F',home:'Holandia',away:'Szwecja',phase:'group'},
+  {id:'gF4',date:'21.06',time:'06:00',group:'F',home:'Tunezja',away:'Japonia',phase:'group'},
+  {id:'gF5',date:'26.06',time:'01:00',group:'F',home:'Japonia',away:'Szwecja',phase:'group'},
+  {id:'gF6',date:'26.06',time:'01:00',group:'F',home:'Tunezja',away:'Holandia',phase:'group'},
+  // ── GRUPA G: Belgia, Egipt, Iran, Nowa Zelandia ──
+  {id:'gG1',date:'15.06',time:'21:00',group:'G',home:'Belgia',away:'Egipt',phase:'group'},
+  {id:'gG2',date:'16.06',time:'03:00',group:'G',home:'Iran',away:'Nowa Zelandia',phase:'group'},
+  {id:'gG3',date:'21.06',time:'21:00',group:'G',home:'Belgia',away:'Iran',phase:'group'},
+  {id:'gG4',date:'22.06',time:'03:00',group:'G',home:'Nowa Zelandia',away:'Egipt',phase:'group'},
+  {id:'gG5',date:'27.06',time:'05:00',group:'G',home:'Nowa Zelandia',away:'Belgia',phase:'group'},
+  {id:'gG6',date:'27.06',time:'05:00',group:'G',home:'Egipt',away:'Iran',phase:'group'},
+  // ── GRUPA H: Hiszpania, Urugwaj, Rep. Zielonego Przylądka, Arabia Saudyjska ──
+  {id:'gH1',date:'15.06',time:'18:00',group:'H',home:'Hiszpania',away:'Republika Zielonego Przylądka',phase:'group'},
+  {id:'gH2',date:'16.06',time:'00:00',group:'H',home:'Arabia Saudyjska',away:'Urugwaj',phase:'group'},
+  {id:'gH3',date:'21.06',time:'18:00',group:'H',home:'Hiszpania',away:'Arabia Saudyjska',phase:'group'},
+  {id:'gH4',date:'22.06',time:'00:00',group:'H',home:'Urugwaj',away:'Republika Zielonego Przylądka',phase:'group'},
+  {id:'gH5',date:'27.06',time:'02:00',group:'H',home:'Republika Zielonego Przylądka',away:'Arabia Saudyjska',phase:'group'},
+  {id:'gH6',date:'27.06',time:'02:00',group:'H',home:'Urugwaj',away:'Hiszpania',phase:'group'},
+  // ── GRUPA I: Francja, Norwegia, Senegal, Irak ──
+  {id:'gI1',date:'16.06',time:'21:00',group:'I',home:'Francja',away:'Senegal',phase:'group'},
+  {id:'gI2',date:'17.06',time:'00:00',group:'I',home:'Irak',away:'Norwegia',phase:'group'},
+  {id:'gI3',date:'22.06',time:'19:00',group:'I',home:'Francja',away:'Irak',phase:'group'},
+  {id:'gI4',date:'22.06',time:'23:00',group:'I',home:'Norwegia',away:'Senegal',phase:'group'},
+  {id:'gI5',date:'26.06',time:'21:00',group:'I',home:'Norwegia',away:'Francja',phase:'group'},
+  {id:'gI6',date:'26.06',time:'21:00',group:'I',home:'Senegal',away:'Irak',phase:'group'},
+  // ── GRUPA J: Austria, Argentyna, Algieria, Jordania ──
+  {id:'gJ1',date:'17.06',time:'03:00',group:'J',home:'Argentyna',away:'Algieria',phase:'group'},
+  {id:'gJ2',date:'17.06',time:'06:00',group:'J',home:'Austria',away:'Jordania',phase:'group'},
+  {id:'gJ3',date:'22.06',time:'19:00',group:'J',home:'Argentyna',away:'Austria',phase:'group'},
+  {id:'gJ4',date:'23.06',time:'05:00',group:'J',home:'Jordania',away:'Algieria',phase:'group'},
+  {id:'gJ5',date:'27.06',time:'23:00',group:'J',home:'Algieria',away:'Austria',phase:'group'},
+  {id:'gJ6',date:'28.06',time:'04:00',group:'J',home:'Jordania',away:'Argentyna',phase:'group'},
+  // ── GRUPA K: Portugalia, Kolumbia, DR Konga, Uzbekistan ──
+  {id:'gK1',date:'17.06',time:'19:00',group:'K',home:'Portugalia',away:'DR Konga',phase:'group'},
+  {id:'gK2',date:'18.06',time:'04:00',group:'K',home:'Uzbekistan',away:'Kolumbia',phase:'group'},
+  {id:'gK3',date:'23.06',time:'19:00',group:'K',home:'Portugalia',away:'Uzbekistan',phase:'group'},
+  {id:'gK4',date:'24.06',time:'04:00',group:'K',home:'Kolumbia',away:'DR Konga',phase:'group'},
+  {id:'gK5',date:'28.06',time:'01:30',group:'K',home:'DR Konga',away:'Uzbekistan',phase:'group'},
+  {id:'gK6',date:'28.06',time:'01:30',group:'K',home:'Kolumbia',away:'Portugalia',phase:'group'},
+  // ── GRUPA L: Chorwacja, Anglia, Ghana, Panama ──
+  {id:'gL1',date:'17.06',time:'22:00',group:'L',home:'Anglia',away:'Chorwacja',phase:'group'},
+  {id:'gL2',date:'18.06',time:'01:00',group:'L',home:'Ghana',away:'Panama',phase:'group'},
+  {id:'gL3',date:'23.06',time:'22:00',group:'L',home:'Anglia',away:'Ghana',phase:'group'},
+  {id:'gL4',date:'24.06',time:'01:00',group:'L',home:'Panama',away:'Chorwacja',phase:'group'},
+  {id:'gL5',date:'27.06',time:'23:00',group:'L',home:'Chorwacja',away:'Ghana',phase:'group'},
+  {id:'gL6',date:'28.06',time:'04:00',group:'L',home:'Panama',away:'Anglia',phase:'group'},
+    // ── 1/16 FINAŁU – 16 spotkań ──
   {id:'r16_01',date:'29.06',time:'18:00',group:'1/16',home:'1A',away:'2B',phase:'r16'},
   {id:'r16_02',date:'29.06',time:'21:00',group:'1/16',home:'1B',away:'2A',phase:'r16'},
   {id:'r16_03',date:'30.06',time:'18:00',group:'1/16',home:'1C',away:'2D',phase:'r16'},
