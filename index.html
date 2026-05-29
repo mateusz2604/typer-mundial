@@ -689,10 +689,10 @@ function teamSelectHtml(idSuffix, selectedName) {
   </select>`;
 }
 
-function matchCard(m, homeVal, awayVal, disabled, showResult, official) {
+function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnlock=false) {
   const off = official && official[m.id] ? official[m.id] : null;
   const played = off && off.h!=='' && off.a!=='';
-  const locked = isMatchLocked(m);
+  const locked = !forceUnlock && isMatchLocked(m);
   const isDisabled = disabled || locked;
 
   let resultBadge = '';
@@ -974,7 +974,7 @@ function renderWyniki(phase) {
     `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.25rem;">${tabs}</div>` +
     (filtered.length ? filtered.map(m => {
       const off=state.official[m.id]||{};
-      return matchCard(m, off.h??'', off.a??'', false, false, null);
+      return matchCard(m, off.h??'', off.a??'', false, false, null, true); // forceUnlock dla admina
     }).join('') : '<p style="color:var(--muted);font-size:13px;">Brak meczów w tej fazie.</p>');
 }
 
@@ -1035,15 +1035,27 @@ async function removeMatch(id) {
 }
 
 async function saveOfficialResults() {
+  // Zbierz tylko mecze widoczne w DOM (aktualnej fazy)
+  let saved = 0;
   getMatches().forEach(m => {
-    const h=document.getElementById(m.id+'_h')?.value??'';
-    const a=document.getElementById(m.id+'_a')?.value??'';
-    if (h!==''||a!=='') state.official[m.id]={h:h.toString(),a:a.toString()};
+    const hEl = document.getElementById(m.id+'_h');
+    const aEl = document.getElementById(m.id+'_a');
+    if (!hEl || !aEl) return; // nie widoczny – pomijaj, nie nadpisuj
+    const h = hEl.value ?? '';
+    const a = aEl.value ?? '';
+    if (h !== '' && a !== '') {
+      state.official[m.id] = {h: h.toString(), a: a.toString()};
+      saved++;
+    }
   });
+  if (saved === 0) {
+    showToast('⚠️ Wpisz wyniki przed zapisaniem!');
+    return;
+  }
   recalcPoints();
   await fbSet('official', state.official);
   await fbSet('points', state.points);
-  showToast('✓ Wyniki zapisane, punkty przeliczone!');
+  showToast(`✓ Zapisano ${saved} wyników, punkty przeliczone!`);
 }
 
 function recalcPoints() {
