@@ -98,8 +98,8 @@ nav::-webkit-scrollbar { display: none; }
 .round-title { font-size: 14px; font-weight: 600; color: var(--text); }
 .round-subtitle { font-size: 12px; color: var(--muted); }
 .round-count { font-size: 11px; background: var(--bg3); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px; color: var(--muted); }
-.round-chevron { font-size: 18px; color: var(--muted); transition: transform 0.2s; line-height: 1; }
-.round-block.open .round-chevron { transform: rotate(180deg); }
+.round-chevron { font-size: 20px; color: var(--muted); transition: transform 0.25s; line-height: 1; display: inline-block; }
+.round-block.open .round-chevron { transform: rotate(90deg); color: var(--green); }
 .round-body { display: none; padding: 10px; background: var(--bg); }
 .round-block.open .round-body { display: block; }
 .round-body .match-card { margin-bottom: 8px; }
@@ -183,6 +183,7 @@ nav::-webkit-scrollbar { display: none; }
 .group-table td:first-child { text-align: left; padding-left: 14px; }
 .group-table tr:last-child td { border-bottom: none; }
 .group-table tr.promoted td { background: rgba(0,200,83,0.04); }
+.group-table tr.third td { background: rgba(100,160,255,0.06); }
 .group-team-name { display: flex; align-items: center; gap: 8px; font-weight: 500; }
 .group-pts { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--green); }
 .group-num { color: var(--muted); font-size: 13px; }
@@ -354,11 +355,11 @@ const ALL_TEAMS = [
   {name:'Norwegia', flag:'🇳🇴'},
   {name:'Szwecja', flag:'🇸🇪'},
   {name:'Turcja', flag:'🇹🇷'},
-  {name:'Bośnia i Hercegovina', flag:'🇧🇦'},
+  {name:'Bośnia i Herce.', flag:'🇧🇦'},
   // AFC
   {name:'Japonia', flag:'🇯🇵'},
-  {name:'Korea Południowa', flag:'🇰🇷'},
-  {name:'Arabia Saudyjska', flag:'🇸🇦'},
+  {name:'Korea Płd.', flag:'🇰🇷'},
+  {name:'Arabia Saudy.', flag:'🇸🇦'},
   {name:'Australia', flag:'🇦🇺'},
   {name:'Iran', flag:'🇮🇷'},
   {name:'Katar', flag:'🇶🇦'},
@@ -372,9 +373,9 @@ const ALL_TEAMS = [
   {name:'Ghana', flag:'🇬🇭'},
   {name:'Algieria', flag:'🇩🇿'},
   {name:'Tunezja', flag:'🇹🇳'},
-  {name:'Wybrzeże Kości Słoniowej', flag:'🇨🇮'},
-  {name:'Republika Południowej Afryki', flag:'🇿🇦'},
-  {name:'Republika Zielonego Przylądka', flag:'🇨🇻'},
+  {name:'WKS', flag:'🇨🇮'},
+  {name:'RPA', flag:'🇿🇦'},
+  {name:'Rep. Ziel. Przylądka', flag:'🇨🇻'},
   {name:'DR Konga', flag:'🇨🇩'},
   // OFC
   {name:'Nowa Zelandia', flag:'🇳🇿'},
@@ -398,19 +399,19 @@ function teamFlag(name) {
 // UWAGA: drużyny w fazie pucharowej wpisz ręcznie gdy znane będą pary
 // ============================================================
 let DEFAULT_MATCHES = [
-  // ── GRUPA A: Czechy, Meksyk, Rep. Południowej Afryki, Korea Południowa ──
-  {id:'gA1',date:'11.06',time:'21:00',group:'A',home:'Meksyk',away:'Republika Południowej Afryki',phase:'group'},
-  {id:'gA2',date:'12.06',time:'04:00',group:'A',home:'Korea Południowa',away:'Czechy',phase:'group'},
-  {id:'gA3',date:'18.06',time:'18:00',group:'A',home:'Czechy',away:'Republika Południowej Afryki',phase:'group'},
-  {id:'gA4',date:'19.06',time:'03:00',group:'A',home:'Meksyk',away:'Korea Południowa',phase:'group'},
+  // ── GRUPA A: Czechy, Meksyk, Rep. Południowej Afryki, Korea Płd. ──
+  {id:'gA1',date:'11.06',time:'21:00',group:'A',home:'Meksyk',away:'RPA',phase:'group'},
+  {id:'gA2',date:'12.06',time:'04:00',group:'A',home:'Korea Płd.',away:'Czechy',phase:'group'},
+  {id:'gA3',date:'18.06',time:'18:00',group:'A',home:'Czechy',away:'RPA',phase:'group'},
+  {id:'gA4',date:'19.06',time:'03:00',group:'A',home:'Meksyk',away:'Korea Płd.',phase:'group'},
   {id:'gA5',date:'25.06',time:'03:00',group:'A',home:'Czechy',away:'Meksyk',phase:'group'},
-  {id:'gA6',date:'25.06',time:'03:00',group:'A',home:'Republika Południowej Afryki',away:'Korea Południowa',phase:'group'},
-  // ── GRUPA B: Szwajcaria, Bośnia i Hercegovina, Kanada, Katar ──
-  {id:'gB1',date:'12.06',time:'21:00',group:'B',home:'Kanada',away:'Bośnia i Hercegovina',phase:'group'},
+  {id:'gA6',date:'25.06',time:'03:00',group:'A',home:'RPA',away:'Korea Płd.',phase:'group'},
+  // ── GRUPA B: Szwajcaria, Bośnia i Herce., Kanada, Katar ──
+  {id:'gB1',date:'12.06',time:'21:00',group:'B',home:'Kanada',away:'Bośnia i Herce.',phase:'group'},
   {id:'gB2',date:'13.06',time:'21:00',group:'B',home:'Katar',away:'Szwajcaria',phase:'group'},
-  {id:'gB3',date:'18.06',time:'21:00',group:'B',home:'Szwajcaria',away:'Bośnia i Hercegovina',phase:'group'},
+  {id:'gB3',date:'18.06',time:'21:00',group:'B',home:'Szwajcaria',away:'Bośnia i Herce.',phase:'group'},
   {id:'gB4',date:'19.06',time:'00:00',group:'B',home:'Kanada',away:'Katar',phase:'group'},
-  {id:'gB5',date:'24.06',time:'21:00',group:'B',home:'Bośnia i Hercegovina',away:'Katar',phase:'group'},
+  {id:'gB5',date:'24.06',time:'21:00',group:'B',home:'Bośnia i Herce.',away:'Katar',phase:'group'},
   {id:'gB6',date:'24.06',time:'21:00',group:'B',home:'Szwajcaria',away:'Kanada',phase:'group'},
   // ── GRUPA C: Szkocja, Brazylia, Haiti, Maroko ──
   {id:'gC1',date:'14.06',time:'00:00',group:'C',home:'Brazylia',away:'Maroko',phase:'group'},
@@ -426,13 +427,13 @@ let DEFAULT_MATCHES = [
   {id:'gD4',date:'20.06',time:'05:00',group:'D',home:'Turcja',away:'Paragwaj',phase:'group'},
   {id:'gD5',date:'26.06',time:'04:00',group:'D',home:'Turcja',away:'USA',phase:'group'},
   {id:'gD6',date:'26.06',time:'04:00',group:'D',home:'Paragwaj',away:'Australia',phase:'group'},
-  // ── GRUPA E: Niemcy, Ekwador, Wybrzeże Kości Słoniowej, Curaçao ──
+  // ── GRUPA E: Niemcy, Ekwador, WKS, Curaçao ──
   {id:'gE1',date:'14.06',time:'19:00',group:'E',home:'Niemcy',away:'Curaçao',phase:'group'},
-  {id:'gE2',date:'15.06',time:'01:00',group:'E',home:'Wybrzeże Kości Słoniowej',away:'Ekwador',phase:'group'},
-  {id:'gE3',date:'20.06',time:'22:00',group:'E',home:'Niemcy',away:'Wybrzeże Kości Słoniowej',phase:'group'},
+  {id:'gE2',date:'15.06',time:'01:00',group:'E',home:'WKS',away:'Ekwador',phase:'group'},
+  {id:'gE3',date:'20.06',time:'22:00',group:'E',home:'Niemcy',away:'WKS',phase:'group'},
   {id:'gE4',date:'21.06',time:'02:00',group:'E',home:'Ekwador',away:'Curaçao',phase:'group'},
   {id:'gE5',date:'25.06',time:'22:00',group:'E',home:'Ekwador',away:'Niemcy',phase:'group'},
-  {id:'gE6',date:'25.06',time:'22:00',group:'E',home:'Curaçao',away:'Wybrzeże Kości Słoniowej',phase:'group'},
+  {id:'gE6',date:'25.06',time:'22:00',group:'E',home:'Curaçao',away:'WKS',phase:'group'},
   // ── GRUPA F: Szwecja, Holandia, Tunezja, Japonia ──
   {id:'gF1',date:'14.06',time:'22:00',group:'F',home:'Holandia',away:'Japonia',phase:'group'},
   {id:'gF2',date:'15.06',time:'04:00',group:'F',home:'Szwecja',away:'Tunezja',phase:'group'},
@@ -447,12 +448,12 @@ let DEFAULT_MATCHES = [
   {id:'gG4',date:'22.06',time:'03:00',group:'G',home:'Nowa Zelandia',away:'Egipt',phase:'group'},
   {id:'gG5',date:'27.06',time:'05:00',group:'G',home:'Nowa Zelandia',away:'Belgia',phase:'group'},
   {id:'gG6',date:'27.06',time:'05:00',group:'G',home:'Egipt',away:'Iran',phase:'group'},
-  // ── GRUPA H: Hiszpania, Urugwaj, Rep. Zielonego Przylądka, Arabia Saudyjska ──
-  {id:'gH1',date:'15.06',time:'18:00',group:'H',home:'Hiszpania',away:'Republika Zielonego Przylądka',phase:'group'},
-  {id:'gH2',date:'16.06',time:'00:00',group:'H',home:'Arabia Saudyjska',away:'Urugwaj',phase:'group'},
-  {id:'gH3',date:'21.06',time:'18:00',group:'H',home:'Hiszpania',away:'Arabia Saudyjska',phase:'group'},
-  {id:'gH4',date:'22.06',time:'00:00',group:'H',home:'Urugwaj',away:'Republika Zielonego Przylądka',phase:'group'},
-  {id:'gH5',date:'27.06',time:'02:00',group:'H',home:'Republika Zielonego Przylądka',away:'Arabia Saudyjska',phase:'group'},
+  // ── GRUPA H: Hiszpania, Urugwaj, Rep. Zielonego Przylądka, Arabia Saudy. ──
+  {id:'gH1',date:'15.06',time:'18:00',group:'H',home:'Hiszpania',away:'Rep. Ziel. Przylądka',phase:'group'},
+  {id:'gH2',date:'16.06',time:'00:00',group:'H',home:'Arabia Saudy.',away:'Urugwaj',phase:'group'},
+  {id:'gH3',date:'21.06',time:'18:00',group:'H',home:'Hiszpania',away:'Arabia Saudy.',phase:'group'},
+  {id:'gH4',date:'22.06',time:'00:00',group:'H',home:'Urugwaj',away:'Rep. Ziel. Przylądka',phase:'group'},
+  {id:'gH5',date:'27.06',time:'02:00',group:'H',home:'Rep. Ziel. Przylądka',away:'Arabia Saudy.',phase:'group'},
   {id:'gH6',date:'27.06',time:'02:00',group:'H',home:'Urugwaj',away:'Hiszpania',phase:'group'},
   // ── GRUPA I: Francja, Norwegia, Senegal, Irak ──
   {id:'gI1',date:'16.06',time:'21:00',group:'I',home:'Francja',away:'Senegal',phase:'group'},
@@ -848,9 +849,9 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
       else if (Math.sign(oh_i-oa_i)===Math.sign(ph_i-pa_i)) color = 'var(--gold)';
       else color = 'var(--red)';
     }
-    officialScoreRow = `<div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12px;color:var(--muted);">
-      <span>Wynik oficjalny:</span>
-      <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:${color};letter-spacing:0.04em;">${oh} : ${oa}</span>
+    officialScoreRow = `<div style="font-size:11px;color:var(--muted);text-align:center;line-height:1.2;">
+      <div style="font-size:10px;margin-bottom:1px;text-transform:uppercase;letter-spacing:0.04em;">oficjalny</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:${color};letter-spacing:0.06em;">${oh}:${oa}</div>
     </div>`;
   }
 
@@ -864,15 +865,17 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
     ${locked&&!disabled&&!forceUnlock?'<div style="font-size:12px;color:#ff6400;margin-bottom:10px;">🔒 Mecz się rozpoczął – typowanie zablokowane</div>':''}
     <div class="match-teams">
       <div class="team-home"><span style="font-size:22px">${hFlag}</span><span class="team-name">${m.home}</span></div>
-      <div class="score-box">
-        <input class="score-inp" type="number" min="0" max="20" id="${m.id}_h" value="${homeVal}" placeholder="?" ${isDisabled?'disabled':''}/>
-        <span class="score-sep">:</span>
-        <input class="score-inp" type="number" min="0" max="20" id="${m.id}_a" value="${awayVal}" placeholder="?" ${isDisabled?'disabled':''}/>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="score-box">
+          <input class="score-inp" type="number" min="0" max="20" id="${m.id}_h" value="${homeVal}" placeholder="?" ${isDisabled?'disabled':''}/>
+          <span class="score-sep">:</span>
+          <input class="score-inp" type="number" min="0" max="20" id="${m.id}_a" value="${awayVal}" placeholder="?" ${isDisabled?'disabled':''}/>
+        </div>
+        ${officialScoreRow}
       </div>
       <div class="team-away"><span style="font-size:22px">${aFlag}</span><span class="team-name">${m.away}</span></div>
     </div>
-    ${officialScoreRow}
-    ${resultBadge?`<div style="margin-top:6px;">${resultBadge}</div>`:''}
+    ${resultBadge?`<div style="margin-top:8px;">${resultBadge}</div>`:''}
   </div>`;
 }
 
@@ -889,37 +892,27 @@ const PHASE_MAP = {
 // Grupuje mecze w kolejki wg fazy
 function getRounds(matches, phase) {
   if (phase === 'group') {
-    // Kolejki grupowe wg daty – mecze tej samej "rundy" (1,2,3 w każdej grupie)
-    // Runda 1: gX1+gX2, Runda 2: gX3+gX4, Runda 3: gX5+gX6
     const r1 = matches.filter(m => m.id.match(/g[A-L]([12])$/));
     const r2 = matches.filter(m => m.id.match(/g[A-L]([34])$/));
     const r3 = matches.filter(m => m.id.match(/g[A-L]([56])$/));
     const rest = matches.filter(m => !m.id.match(/g[A-L][1-6]$/));
     const rounds = [];
-    if (r1.length) rounds.push({title:'I kolejka', subtitle:'Mecze 1-2 w grupie', matches: r1});
-    if (r2.length) rounds.push({title:'II kolejka', subtitle:'Mecze 3-4 w grupie', matches: r2});
-    if (r3.length) rounds.push({title:'III kolejka', subtitle:'Mecze 5-6 w grupie', matches: r3});
+    if (r1.length) rounds.push({title:'I kolejka',  subtitle:'Mecze I kolejki',  matches: r1});
+    if (r2.length) rounds.push({title:'II kolejka', subtitle:'Mecze II kolejki', matches: r2});
+    if (r3.length) rounds.push({title:'III kolejka',subtitle:'Mecze III kolejki',matches: r3});
     if (rest.length) rounds.push({title:'Pozostałe', subtitle:'', matches: rest});
     return rounds;
   }
-  if (phase === 'r16') {
-    return [{title:'I kolejka', subtitle:'Mecze 1/16 finału', matches}];
-  }
-  if (phase === 'r8') {
-    return [{title:'II kolejka', subtitle:'Mecze 1/8 finału', matches}];
-  }
-  if (phase === 'qf') {
-    return [{title:'III kolejka – Ćwierćfinały', subtitle:'4 mecze', matches}];
-  }
-  if (phase === 'sf') {
-    return [{title:'Półfinały', subtitle:'2 mecze', matches}];
-  }
+  if (phase === 'r16') return [{title:'1/16 finału',   subtitle:'', matches}];
+  if (phase === 'r8')  return [{title:'1/8 finału',    subtitle:'', matches}];
+  if (phase === 'qf')  return [{title:'Ćwierćfinały',  subtitle:'', matches}];
+  if (phase === 'sf')  return [{title:'Półfinały',      subtitle:'', matches}];
   if (phase === 'final') {
-    const p3 = matches.filter(m => m.phase==='p3');
+    const p3  = matches.filter(m => m.phase==='p3');
     const fin = matches.filter(m => m.phase==='final');
     const rounds = [];
-    if (p3.length) rounds.push({title:'Mecz o 3. miejsce', subtitle:'', matches: p3});
-    if (fin.length) rounds.push({title:'Finał', subtitle:'🏆', matches: fin});
+    if (p3.length)  rounds.push({title:'Mecz o 3. miejsce', subtitle:'', matches: p3});
+    if (fin.length) rounds.push({title:'Finał 🏆',          subtitle:'', matches: fin});
     return rounds;
   }
   return [{title:'Mecze', subtitle:'', matches}];
@@ -931,7 +924,7 @@ function toggleRound(el) {
 
 function renderRoundsHtml(rounds, cardFn) {
   return rounds.map((round, i) => `
-    <div class="round-block ${i===0?'open':''}">
+    <div class="round-block">
       <div class="round-header" onclick="toggleRound(this)">
         <div class="round-header-left">
           <span class="round-title">${round.title}</span>
@@ -939,7 +932,7 @@ function renderRoundsHtml(rounds, cardFn) {
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           ${round.subtitle?`<span class="round-subtitle">${round.subtitle}</span>`:''}
-          <span class="round-chevron">⌄</span>
+          <span class="round-chevron">›</span>
         </div>
       </div>
       <div class="round-body">
@@ -1047,13 +1040,13 @@ function renderTabela() {
   const matches = getMatches();
   const official = state.official;
 
-  // Tylko mecze fazy grupowej (phase==='group') i tylko grupy A–L (jeden znak)
+  // Zbierz dane dla grup A–L
   const groups = {};
   matches.filter(m => m.phase === 'group' && /^[A-L]$/.test(m.group)).forEach(m => {
-    const g = m.group || '?';
+    const g = m.group;
     if (!groups[g]) groups[g] = {};
     [m.home, m.away].forEach(team => {
-      if (!groups[g][team]) groups[g][team] = {team, pkt:0, m:0, w:0, r:0, p:0, bf:0, bc:0};
+      if (!groups[g][team]) groups[g][team] = {team, group:g, pkt:0, m:0, w:0, r:0, p:0, bf:0, bc:0};
     });
     const off = official[m.id];
     if (off && off.h !== '' && off.a !== '') {
@@ -1075,19 +1068,28 @@ function renderTabela() {
     return;
   }
 
-  document.getElementById('groupTables').innerHTML = sortedGroups.map(g => {
-    const teams = Object.values(groups[g]).sort((a,b) => {
+  function sortTeams(teams) {
+    return teams.sort((a,b) => {
       if (b.pkt !== a.pkt) return b.pkt - a.pkt;
       const bBr = b.bf - b.bc, aBr = a.bf - a.bc;
       if (bBr !== aBr) return bBr - aBr;
       return b.bf - a.bf;
     });
+  }
+
+  // Tabele grup A–L
+  const groupTablesHtml = sortedGroups.map(g => {
+    const teams = sortTeams(Object.values(groups[g]));
     const rows = teams.map((t, i) => {
       const flag = teamFlag(t.team);
       const br = (t.bf - t.bc >= 0 ? '+' : '') + (t.bf - t.bc);
       const promoted = i < 2;
-      return `<tr class="${promoted ? 'promoted' : ''}">
-        <td><div class="group-team-name">${promoted ? '<span class="adv-badge"></span>' : '<span style="width:10px;display:inline-block"></span>'}<span style="font-size:18px">${flag}</span>${t.team}</div></td>
+      const third = i === 2;
+      return `<tr class="${promoted ? 'promoted' : third ? 'third' : ''}">
+        <td><div class="group-team-name">
+          ${promoted ? '<span class="adv-badge"></span>' : third ? '<span style="width:10px;height:10px;border-radius:50%;background:rgba(100,160,255,0.7);display:inline-block;margin-right:4px;flex-shrink:0;"></span>' : '<span style="width:10px;display:inline-block"></span>'}
+          <span style="font-size:18px">${flag}</span>${t.team}
+        </div></td>
         <td class="group-num">${t.m}</td>
         <td class="group-num">${t.w}</td>
         <td class="group-num">${t.r}</td>
@@ -1109,6 +1111,52 @@ function renderTabela() {
       </table>
     </div>`;
   }).join('');
+
+  // Klasyfikacja 3. miejsc – zbieramy po jednej drużynie z każdej grupy (3. miejsce)
+  const thirdPlaceTeams = sortedGroups.map(g => {
+    const teams = sortTeams(Object.values(groups[g]));
+    return teams[2] || null;
+  }).filter(Boolean);
+
+  const sortedThird = sortTeams([...thirdPlaceTeams]);
+  const qualifiedCount = 8; // 8 najlepszych 3. miejsc awansuje
+
+  const thirdHtml = thirdPlaceTeams.length >= 3 ? `
+    <div class="group-block" style="margin-top:2rem;">
+      <div class="group-label">Klasyfikacja <span>3. miejsc</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">8 najlepszych drużyn z 3. miejsc awansuje do 1/16 finału</p>
+      <table class="group-table">
+        <thead><tr>
+          <th>#</th><th>Drużyna</th><th>Gr.</th>
+          <th title="Mecze">M</th><th title="Wygrane">W</th><th title="Remisy">R</th>
+          <th title="Porażki">P</th><th title="Bramki">Br</th><th title="Bilans">+/-</th>
+          <th title="Punkty">Pkt</th>
+        </tr></thead>
+        <tbody>${sortedThird.map((t, i) => {
+          const flag = teamFlag(t.team);
+          const br = (t.bf - t.bc >= 0 ? '+' : '') + (t.bf - t.bc);
+          const advances = i < qualifiedCount;
+          return `<tr class="${advances ? 'promoted' : ''}">
+            <td class="group-num" style="font-weight:600;${advances?'color:var(--green)':''}">${i+1}</td>
+            <td><div class="group-team-name">
+              ${advances ? '<span class="adv-badge"></span>' : '<span style="width:10px;display:inline-block"></span>'}
+              <span style="font-size:16px">${flag}</span>${t.team}
+            </div></td>
+            <td class="group-num" style="font-weight:600;">${t.group}</td>
+            <td class="group-num">${t.m}</td>
+            <td class="group-num">${t.w}</td>
+            <td class="group-num">${t.r}</td>
+            <td class="group-num">${t.p}</td>
+            <td class="group-num">${t.bf}:${t.bc}</td>
+            <td class="group-num" style="color:var(--muted);font-size:11px;">${br}</td>
+            <td class="group-pts">${t.pkt}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+      <p style="font-size:11px;color:var(--muted);margin-top:8px;">🟢 Awansuje do 1/16 finału · Kolejność: punkty → bilans bramkowy → strzelone bramki</p>
+    </div>` : '';
+
+  document.getElementById('groupTables').innerHTML = groupTablesHtml + thirdHtml;
 }
 
 function renderGracze() {
