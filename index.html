@@ -439,9 +439,17 @@ nav::-webkit-scrollbar { display: none; }
 .group-pts { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--green); }
 .group-num { color: var(--muted); font-size: 13px; }
 .adv-badge { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 4px; vertical-align: middle; }
+/* AVATAR PICKER */
+.avatar-picker { margin-top: 6px; }
+.avatar-emojis { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.avatar-emoji-btn { width: 36px; height: 36px; border-radius: 8px; border: 2px solid transparent; background: var(--bg3); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, transform 0.1s; }
+.avatar-emoji-btn.selected { border-color: var(--green); transform: scale(1.1); }
+.avatar-colors { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.avatar-color-btn { width: 26px; height: 26px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: border-color 0.15s, transform 0.1s; flex-shrink: 0; }
+.avatar-color-btn.selected { border-color: var(--text); transform: scale(1.15); }
+.avatar-preview-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+.avatar-preview { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: background 0.2s; }
 </style>
-</head>
-<body>
 
 <!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
@@ -457,6 +465,16 @@ nav::-webkit-scrollbar { display: none; }
     <div class="form-group">
       <label>Hasło grupowe</label>
       <input type="password" id="passInput" placeholder="••••••••" onkeydown="handleLoginKey(event,'pass')"/>
+    </div>
+    <div class="form-group">
+      <label>Avatar</label>
+      <div class="avatar-picker">
+        <div class="avatar-preview-wrap">
+          <div class="avatar-preview" id="avatarPreview" style="background:#009624;">⚽</div>
+        </div>
+        <div class="avatar-emojis" id="avatarEmojis"></div>
+        <div class="avatar-colors" id="avatarColors"></div>
+      </div>
     </div>
     <div class="error-msg" id="loginError"></div>
     <button class="btn" onclick="loginPlayer()">Wchodzę ⚽</button>
@@ -1235,8 +1253,62 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-function showAdminLogin() { document.getElementById('loginForm').style.display='none'; document.getElementById('adminForm').style.display='block'; }
-function showPlayerLogin() { document.getElementById('adminForm').style.display='none'; document.getElementById('loginForm').style.display='block'; }
+// ── AVATAR ───────────────────────────────────────────────────
+const AVATAR_EMOJIS = ['⚽','🦁','🔥','⚡','🦅','🐉','🌟','🏆','👑','🎯','🦊','🐺','🤺','🥊','🎪','🚀','🌊','❄️','🎭','🦋'];
+const AVATAR_COLORS = ['#009624','#0969da','#c9a000','#cc2040','#8b3fd4','#c2410c','#0e7490','#166534','#7c3aed','#be185d','#374151','#b45309'];
+
+let selectedEmoji = '⚽';
+let selectedColor = '#009624';
+
+function initAvatarPicker() {
+  const emojisEl = document.getElementById('avatarEmojis');
+  const colorsEl = document.getElementById('avatarColors');
+  if (!emojisEl) return;
+
+  emojisEl.innerHTML = AVATAR_EMOJIS.map(e =>
+    `<button class="avatar-emoji-btn${e===selectedEmoji?' selected':''}" onclick="pickEmoji('${e}')">${e}</button>`
+  ).join('');
+
+  colorsEl.innerHTML = AVATAR_COLORS.map(c =>
+    `<button class="avatar-color-btn${c===selectedColor?' selected':''}" onclick="pickColor('${c}')" style="background:${c};"></button>`
+  ).join('');
+
+  updateAvatarPreview();
+}
+
+function pickEmoji(e) {
+  selectedEmoji = e;
+  document.querySelectorAll('.avatar-emoji-btn').forEach(b => b.classList.toggle('selected', b.textContent===e));
+  updateAvatarPreview();
+}
+
+function pickColor(c) {
+  selectedColor = c;
+  document.querySelectorAll('.avatar-color-btn').forEach(b => b.classList.toggle('selected', b.style.background===c||b.style.backgroundColor===c));
+  updateAvatarPreview();
+}
+
+function updateAvatarPreview() {
+  const p = document.getElementById('avatarPreview');
+  if (p) { p.style.background = selectedColor; p.textContent = selectedEmoji; }
+}
+
+function getAvatarEl(emoji, color, size=32) {
+  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.55)}px;flex-shrink:0;">${emoji}</div>`;
+}
+
+function getPlayerAvatar(nick) {
+  const p = state.players[nick];
+  const emoji = (typeof p==='object' && p.avatarEmoji) ? p.avatarEmoji : '⚽';
+  const color = (typeof p==='object' && p.avatarColor) ? p.avatarColor : '#009624';
+  return { emoji, color };
+}
+
+window.pickEmoji = pickEmoji;
+window.pickColor = pickColor;
+
+// Inicjuj picker po załadowaniu
+document.addEventListener('DOMContentLoaded', initAvatarPicker);
 
 function handleLoginKey(event, field) {
   if (event.key !== 'Enter') return;
@@ -1261,8 +1333,9 @@ async function loginPlayer() {
 
   if (status !== 'approved') {
     if (!player) {
-      await fbSet('players/' + nick, { status: 'pending', displayName: nick });
-      state.players[nick] = { status: 'pending', displayName: nick };
+      const avatarData = { status: 'pending', displayName: nick, avatarEmoji: selectedEmoji, avatarColor: selectedColor };
+      await fbSet('players/' + nick, avatarData);
+      state.players[nick] = avatarData;
       err.style.display='block'; err.style.color='var(--green)';
       err.textContent='✓ Wniosek wysłany! Poczekaj na zatwierdzenie przez admina.'; return;
     } else if (status === 'pending') {
@@ -1311,9 +1384,12 @@ function enterApp() {
     document.getElementById('nav-moje').style.display='none';
     showPage('gracze', document.getElementById('nav-gracze'));
   } else {
-    // Header pokazuje nick do logowania, ranking pokazuje displayName
     document.getElementById('userNameDisplay').textContent = currentUser;
-    document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+    const av = getPlayerAvatar(currentUser);
+    const avatarEl = document.getElementById('userAvatar');
+    avatarEl.textContent = av.emoji;
+    avatarEl.style.background = av.color;
+    avatarEl.style.fontSize = '18px';
     renderTypowanie();
   }
 }
@@ -1650,6 +1726,7 @@ async function renderRanking() {
   document.getElementById('rankingBody').innerHTML = rows.length ? rows.map((r,i)=>{
     const curRank = i+1;
     const prevRank = prevRanks[r.nick];
+    const av = getPlayerAvatar(r.nick);
     let arrow = '';
     if (prevRank !== undefined && prevRank !== curRank) {
       if (curRank < prevRank) arrow = `<span class="rank-arrow-up" title="Awans o ${prevRank-curRank}">▲${prevRank-curRank}</span>`;
@@ -1660,7 +1737,12 @@ async function renderRanking() {
     return `<tr style="${r.nick===currentUser?'background:rgba(0,200,83,0.05)':''};cursor:${r.nick!==currentUser&&!isAdmin?'pointer':''}"
         onclick="${r.nick!==currentUser&&!isAdmin?`showPage('porownaj',document.querySelector('.nav-btn[onclick*=porownaj]'));renderPorownaj('${r.nick}');`:''}">
       <td class="rank-pos" style="${i<3?'color:'+['#ffd600','#aaa','#cd7f32'][i]:''}">${medals[i]||i+1}</td>
-      <td style="font-weight:500;font-size:15px;">${r.display}${r.nick===currentUser?' <span style="font-size:11px;color:var(--muted)">(Ty)</span>':!isAdmin?` <span style="font-size:10px;color:var(--muted)">⚔️</span>`:''}</td>
+      <td style="font-weight:500;font-size:15px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          ${getAvatarEl(av.emoji, av.color, 28)}
+          ${r.display}${r.nick===currentUser?' <span style="font-size:11px;color:var(--muted)">(Ty)</span>':!isAdmin?` <span style="font-size:10px;color:var(--muted)">⚔️</span>`:''}
+        </div>
+      </td>
       <td style="text-align:center;">${arrow}</td>
       <td style="text-align:center;font-size:13px;color:var(--green);">🎯 ${r.exact}</td>
       <td class="rank-pts">${r.pts}</td>
@@ -2160,10 +2242,10 @@ function renderCzat() {
     container.innerHTML = msgs.map(msg => {
       const mine = msg.nick === currentUser;
       const dn = msg.author || msg.nick || '?';
-      const init = dn.charAt(0).toUpperCase();
+      const av = getPlayerAvatar(msg.nick || '');
       const time = new Date(msg.ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
       return `<div class="chat-msg ${mine?'mine':''}">
-        ${!mine?`<div class="comment-avatar" style="flex-shrink:0;">${init}</div>`:''}
+        ${!mine ? getAvatarEl(av.emoji, av.color, 28) : ''}
         <div>
           <div class="chat-bubble">
             <div class="chat-bubble-author">${dn}</div>
