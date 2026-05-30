@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
+/* ── MOTYWY ─────────────────────────────────────── */
 :root {
   --green: #00c853;
   --green-dark: #009624;
@@ -18,6 +19,87 @@
   --border: rgba(255,255,255,0.07);
   --text: #f0f4f0;
   --muted: #7a907a;
+  --accent: #00c853;
+  --accent2: #ffd600;
+  --header-bg: #111611;
+  --nav-bg: #111611;
+  --card-bg: #111611;
+  --input-bg: #182018;
+  --btn-color: #000;
+}
+
+/* NOC – opcja 1, ciemno-zielona */
+[data-theme="noc"] {
+  --bg: #0a0e0a; --bg2: #111611; --bg3: #182018;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0f4f0; --muted: #7a907a;
+  --accent: #00c853; --accent2: #ffd600;
+  --header-bg: #111611; --nav-bg: #111611;
+  --card-bg: #111611; --input-bg: #182018;
+  --btn-color: #000;
+}
+
+/* STANDARD – opcja 3, granatowo-złota */
+[data-theme="standard"] {
+  --bg: #0a1628; --bg2: #0f2040; --bg3: #162b55;
+  --border: rgba(255,255,255,0.08);
+  --text: #e8f0fe; --muted: #6b8cba;
+  --accent: #f5c518; --accent2: #64a0ff;
+  --header-bg: #0f2040; --nav-bg: #0f2040;
+  --card-bg: #0f2040; --input-bg: #0a1628;
+  --btn-color: #0a1628;
+  --green: #f5c518; --green-dark: #c9a000;
+  --gold: #64a0ff;
+}
+
+/* JASNY – opcja 2 */
+[data-theme="jasny"] {
+  --bg: #f6f8fa; --bg2: #ffffff; --bg3: #f6f8fa;
+  --border: rgba(0,0,0,0.1);
+  --text: #1f2328; --muted: #636c76;
+  --accent: #1a7f37; --accent2: #0969da;
+  --header-bg: #ffffff; --nav-bg: #ffffff;
+  --card-bg: #ffffff; --input-bg: #f6f8fa;
+  --btn-color: #ffffff;
+  --green: #1a7f37; --green-dark: #116329;
+  --red: #d1242f; --gold: #0969da;
+  --score-inp-color: #1f2328;
+}
+
+/* CIEMNY – obecny */
+[data-theme="ciemny"] {
+  --bg: #0d0d0d; --bg2: #161616; --bg3: #1e1e1e;
+  --border: rgba(255,255,255,0.06);
+  --text: #f5f5f5; --muted: #888888;
+  --accent: #00c853; --accent2: #ffd600;
+  --header-bg: #161616; --nav-bg: #161616;
+  --card-bg: #161616; --input-bg: #0d0d0d;
+  --btn-color: #000;
+}
+
+/* THEME SWITCHER */
+.theme-switcher { display: flex; gap: 4px; align-items: center; }
+.theme-btn {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid transparent;
+  cursor: pointer; transition: border-color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.theme-btn:hover { transform: scale(1.15); }
+.theme-btn.active { border-color: var(--text); }
+.theme-btn[data-t="noc"]      { background: linear-gradient(135deg,#111611,#00c853); }
+.theme-btn[data-t="standard"] { background: linear-gradient(135deg,#0f2040,#f5c518); }
+.theme-btn[data-t="jasny"]    { background: linear-gradient(135deg,#f6f8fa,#1a7f37); }
+.theme-btn[data-t="ciemny"]   { background: linear-gradient(135deg,#161616,#888); }
+
+/* CONFETTI */
+.confetti-piece {
+  position: fixed; width: 8px; height: 8px; border-radius: 2px;
+  pointer-events: none; z-index: 9999;
+  animation: confetti-fall linear forwards;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
@@ -27,14 +109,14 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .login-logo { font-family: 'Bebas Neue', sans-serif; font-size: clamp(48px, 12vw, 80px); letter-spacing: 0.04em; line-height: 1; color: var(--text); text-align: center; margin-bottom: 0.25rem; }
 .login-logo span { color: var(--green); }
 .login-sub { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 2.5rem; letter-spacing: 0.08em; text-transform: uppercase; }
-.login-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 360px; }
+.login-card { background: var(--card-bg,var(--bg2)); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; width: 100%; max-width: 360px; }
 .login-card h2 { font-size: 16px; font-weight: 500; margin-bottom: 1.5rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
 .form-group { margin-bottom: 1rem; }
 .form-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
-.form-group input, .form-group select { width: 100%; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
+.form-group input, .form-group select { width: 100%; background: var(--input-bg,var(--bg3)); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; outline: none; transition: border-color 0.2s; }
 .form-group input:focus, .form-group select:focus { border-color: var(--green); }
 .form-group select option { background: var(--bg3); }
-.btn { width: 100%; padding: 13px; background: var(--green); color: #000; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 0.5rem; }
+.btn { width: 100%; padding: 13px; background: var(--green); color: var(--btn-color,#000); border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 0.08em; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 0.5rem; }
 .btn:hover { background: #00e676; }
 .btn:active { transform: scale(0.98); }
 .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 14px; font-family: 'DM Sans', sans-serif; margin-top: 0.5rem; letter-spacing: 0; padding: 10px; }
@@ -119,8 +201,12 @@ nav::-webkit-scrollbar { display: none; }
 .sticky-save .btn { margin: 0; max-width: 700px; margin: 0 auto; display: block; }
 
 /* MATCH CARDS */
-.match-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.2s; }
-.match-card:hover { border-color: rgba(255,255,255,0.14); }
+.match-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.2s; position: relative; overflow: hidden; }
+.match-card:hover { border-color: rgba(128,128,128,0.25); }
+.match-card-flag-bg { position: absolute; inset: 0; opacity: 0.04; pointer-events: none; display: flex; }
+.match-card-flag-bg .flag-left { flex: 1; }
+.match-card-flag-bg .flag-right { flex: 1; }
+.match-card > * { position: relative; z-index: 1; }
 .match-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .match-date { font-size: 12px; color: var(--muted); }
 .match-group { font-size: 11px; background: var(--bg3); border: 1px solid var(--border); padding: 2px 8px; border-radius: 20px; color: var(--muted); }
@@ -129,7 +215,7 @@ nav::-webkit-scrollbar { display: none; }
 .team-away { display: flex; align-items: center; gap: 8px; flex-direction: row-reverse; text-align: right; }
 .team-name { font-size: 14px; font-weight: 500; }
 .score-box { display: flex; align-items: center; gap: 6px; }
-.score-inp { width: 42px; height: 42px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 20px; font-weight: 600; text-align: center; font-family: 'Bebas Neue', sans-serif; outline: none; transition: border-color 0.2s; }
+.score-inp { width: 42px; height: 42px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 20px; font-weight: 600; text-align: center; font-family: 'Bebas Neue', sans-serif; outline: none; transition: border-color 0.2s; }
 .score-inp:focus { border-color: var(--green); }
 .score-inp:disabled { opacity: 0.4; cursor: not-allowed; }
 .score-sep { color: var(--muted); font-size: 16px; }
@@ -172,7 +258,37 @@ nav::-webkit-scrollbar { display: none; }
 .inline-input { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; width: 160px; }
 .inline-input:focus { border-color: var(--green); }
 
-/* TABELA GRUP */
+/* STATYSTYKI */
+.stats-section { margin-bottom: 2rem; }
+.stats-section-title { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 12px; }
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; text-align: center; }
+.stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--green); }
+.stat-num.gold { color: var(--gold); }
+.stat-num.red { color: var(--red); }
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+
+/* WYKRES LINIOWY */
+.chart-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem 0.5rem; margin-bottom: 1rem; overflow: hidden; }
+.chart-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 12px; }
+.chart-svg { width: 100%; overflow: visible; }
+
+/* SKUTECZNOŚĆ BAR */
+.eff-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.eff-name { font-size: 13px; font-weight: 500; min-width: 120px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.eff-bar-wrap { flex: 1; background: var(--bg3); border-radius: 4px; height: 8px; overflow: hidden; }
+.eff-bar { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.eff-pct { font-size: 12px; color: var(--muted); min-width: 36px; text-align: right; }
+
+/* SERIA */
+.streak-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+.streak-name { font-size: 14px; font-weight: 500; }
+.streak-val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--gold); }
+
+/* LEGENDA */
+.chart-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; margin-bottom: 4px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .group-block { margin-bottom: 1.5rem; }
 .group-label { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: var(--text); margin-bottom: 8px; }
 .group-label span { color: var(--green); }
@@ -229,6 +345,12 @@ nav::-webkit-scrollbar { display: none; }
   <header>
     <div class="header-logo">Typer <span>MŚ</span></div>
     <div class="header-user">
+      <div class="theme-switcher">
+        <button class="theme-btn active" data-t="noc"      onclick="setTheme('noc')"      title="Noc"></button>
+        <button class="theme-btn"        data-t="standard" onclick="setTheme('standard')" title="Standard"></button>
+        <button class="theme-btn"        data-t="jasny"    onclick="setTheme('jasny')"    title="Jasny"></button>
+        <button class="theme-btn"        data-t="ciemny"   onclick="setTheme('ciemny')"   title="Ciemny"></button>
+      </div>
       <div class="avatar" id="userAvatar">?</div>
       <span style="font-size:14px;" id="userNameDisplay"></span>
       <button class="logout-btn" onclick="logout()">Wyloguj</button>
@@ -239,6 +361,7 @@ nav::-webkit-scrollbar { display: none; }
     <button class="nav-btn" onclick="showPage('moje',this)" id="nav-moje">Moje typy</button>
     <button class="nav-btn" onclick="showPage('ranking',this)">Ranking</button>
     <button class="nav-btn" onclick="showPage('tabela',this)">Tabela grup</button>
+    <button class="nav-btn" onclick="showPage('statystyki',this)">📊 Statystyki</button>
     <button class="nav-btn admin-only" onclick="showPage('gracze',this)" style="display:none;" id="nav-gracze">👥 Gracze</button>
     <button class="nav-btn admin-only" onclick="showPage('mecze',this)" style="display:none;" id="nav-mecze">📅 Mecze</button>
     <button class="nav-btn admin-only" onclick="showPage('admin',this)" style="display:none;" id="nav-admin">⚡ Wyniki</button>
@@ -273,6 +396,12 @@ nav::-webkit-scrollbar { display: none; }
     <p class="page-title">Tabela <span>grup</span></p>
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;">Wyniki na podstawie wpisanych przez admina rezultatów meczów.</p>
     <div id="groupTables"></div>
+  </div>
+
+  <!-- STATYSTYKI -->
+  <div class="page" id="page-statystyki">
+    <p class="page-title">📊 <span>Statystyki</span></p>
+    <div id="statsContent"></div>
   </div>
 
   <!-- GRACZE -->
@@ -523,8 +652,79 @@ let DEFAULT_MATCHES = [
   {id:'final',date:'26.07',time:'21:00',group:'Finał',home:'W sf1',away:'W sf2',phase:'final'},
 ];
 
-// ============================================================
-// FIREBASE KONFIGURACJA
+// ── MOTYWY ──────────────────────────────────────────────────
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('ms26_theme', t);
+  document.querySelectorAll('.theme-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.t === t);
+  });
+}
+(function initTheme() {
+  const saved = localStorage.getItem('ms26_theme') || 'noc';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.theme-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.t === saved);
+    });
+  });
+})();
+
+// ── CONFETTI ─────────────────────────────────────────────────
+function launchConfetti(x, y) {
+  const colors = ['#00c853','#ffd600','#ff6b35','#64a0ff','#f472b6','#34d399','#fb923c'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.cssText = `
+      left: ${x - 30 + Math.random()*60}px;
+      top: ${y}px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${4 + Math.random()*8}px;
+      height: ${4 + Math.random()*8}px;
+      animation-duration: ${1.5 + Math.random()*1.5}s;
+      animation-delay: ${Math.random()*0.4}s;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+    `;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+}
+
+// ── KOLORY REPREZENTACJI (do tła kart) ───────────────────────
+const TEAM_COLORS = {
+  'Meksyk':['#006847','#CE1126'], 'RPA':['#007A4D','#FFB81C'],
+  'Korea Płd.':['#003478','#CD2E3A'], 'Czechy':['#D7141A','#11457E'],
+  'Kanada':['#FF0000','#FF0000'], 'Bośnia i Herce.':['#002395','#FECC02'],
+  'Katar':['#8D1B3D','#FFFFFF'], 'Szwajcaria':['#FF0000','#FFFFFF'],
+  'Brazylia':['#009C3B','#FFDF00'], 'Maroko':['#C1272D','#006233'],
+  'Haiti':['#00209F','#D21034'], 'Szkocja':['#003380','#003380'],
+  'USA':['#3C3B6E','#B22234'], 'Paragwaj':['#D52B1E','#0038A8'],
+  'Australia':['#00843D','#FFCD00'], 'Turcja':['#E30A17','#E30A17'],
+  'Niemcy':['#000000','#DD0000'], 'WKS':['#F77F00','#009A44'],
+  'Ekwador':['#FFD100','#0072CE'], 'Curaçao':['#002B7F','#F9E300'],
+  'Holandia':['#AE1C28','#21468B'], 'Japonia':['#BC002D','#BC002D'],
+  'Szwecja':['#006AA7','#FECC02'], 'Tunezja':['#E70013','#FFFFFF'],
+  'Belgia':['#000000','#EF3340'], 'Egipt':['#CE1126','#000000'],
+  'Iran':['#239F40','#DA0000'], 'Nowa Zelandia':['#000000','#CC0000'],
+  'Hiszpania':['#AA151B','#F1BF00'], 'Rep. Ziel. Przylądka':['#003893','#CF2027'],
+  'Arabia Saudy.':['#006C35','#006C35'], 'Urugwaj':['#FFFFFF','#75AADB'],
+  'Francja':['#002395','#ED2939'], 'Senegal':['#00853F','#FDEF42'],
+  'Irak':['#CE1126','#007A3D'], 'Norwegia':['#EF2B2D','#002868'],
+  'Argentyna':['#74ACDF','#FFFFFF'], 'Algieria':['#006233','#D21034'],
+  'Austria':['#ED2939','#FFFFFF'], 'Jordania':['#007A3D','#CE1126'],
+  'Portugalia':['#006600','#FF0000'], 'Kolumbia':['#FCD116','#003087'],
+  'DR Konga':['#007FFF','#CE1126'], 'Uzbekistan':['#1EB53A','#1EB53A'],
+  'Chorwacja':['#FF0000','#171796'], 'Anglia':['#CF081F','#012169'],
+  'Ghana':['#006B3F','#FCD116'], 'Panama':['#DA121A','#0033A0'],
+  'Polska':['#DC143C','#FFFFFF'], 'Bośnia i Hercegovina':['#002395','#FECC02'],
+};
+
+function teamColor(name) {
+  return TEAM_COLORS[name] || ['#444','#666'];
+}
+
+// ── FIREBASE KONFIGURACJA ────────────────────────────────────
 // Wklej tutaj dane ze swojego projektu Firebase:
 // Firebase Console → Project Settings → Your apps → SDK setup
 const FIREBASE_CONFIG = {
@@ -780,6 +980,7 @@ function showPage(name, btn) {
   if (name==='moje') renderMoje();
   if (name==='ranking') renderRanking();
   if (name==='tabela') renderTabela();
+  if (name==='statystyki') renderStatystyki();
   if (name==='gracze') renderGracze();
 }
 
@@ -800,7 +1001,7 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
     const oh=parseInt(off.h),oa=parseInt(off.a),ph=parseInt(homeVal),pa=parseInt(awayVal);
     if (oh===ph&&oa===pa) resultBadge='<span class="badge badge-exact">+3 pkt dokładny!</span>';
     else if (Math.sign(oh-oa)===Math.sign(ph-pa)) resultBadge='<span class="badge badge-result">+1 pkt wynik</span>';
-    else resultBadge='<span class="badge badge-miss">0 pkt</span>';
+    else resultBadge='<span class="badge badge-miss" style="background:rgba(229,57,53,0.15);color:var(--red);">0 pkt</span>';
   } else if (showResult && !played) {
     resultBadge='<span class="badge badge-pending">oczekuje na wynik</span>';
   }
@@ -856,7 +1057,13 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
   }
 
   const hFlag=teamFlag(m.home), aFlag=teamFlag(m.away);
+  const hCol = teamColor(m.home), aCol = teamColor(m.away);
+  const flagBg = `<div class="match-card-flag-bg">
+    <div class="flag-left" style="background:linear-gradient(to right,${hCol[0]},${hCol[1]});"></div>
+    <div class="flag-right" style="background:linear-gradient(to left,${aCol[0]},${aCol[1]});"></div>
+  </div>`;
   return `<div class="match-card" style="${locked&&!disabled&&!forceUnlock?'opacity:0.85;':''}">
+    ${flagBg}
     <div class="match-meta">
       <span class="match-date">${m.date}.2026 ${m.time?'· '+m.time:''}</span>
       <div style="display:flex;gap:6px;align-items:center;">${timeBadge}<span class="match-group">Grupa ${m.group}</span></div>
@@ -867,15 +1074,15 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
       <div class="team-home"><span style="font-size:22px">${hFlag}</span><span class="team-name">${m.home}</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
         <div class="score-box">
-          <input class="score-inp" type="number" min="0" max="20" id="${m.id}_h" value="${homeVal}" placeholder="?" ${isDisabled?'disabled':''}/>
+          <input class="score-inp" type="number" min="0" max="99" maxlength="2" id="${m.id}_h" value="${homeVal}" placeholder="?" ${isDisabled?'disabled':''} oninput="this.value=this.value.slice(0,2)"/>
           <span class="score-sep">:</span>
-          <input class="score-inp" type="number" min="0" max="20" id="${m.id}_a" value="${awayVal}" placeholder="?" ${isDisabled?'disabled':''}/>
+          <input class="score-inp" type="number" min="0" max="99" maxlength="2" id="${m.id}_a" value="${awayVal}" placeholder="?" ${isDisabled?'disabled':''} oninput="this.value=this.value.slice(0,2)"/>
         </div>
         ${officialScoreRow}
       </div>
       <div class="team-away"><span style="font-size:22px">${aFlag}</span><span class="team-name">${m.away}</span></div>
     </div>
-    ${resultBadge?`<div style="margin-top:8px;">${resultBadge}</div>`:''}
+    ${resultBadge?`<div style="margin-top:8px;" ${showResult&&resultBadge.includes('dokładny')&&!forceUnlock?`data-confetti="1"`:''}>${resultBadge}</div>`:''}
   </div>`;
 }
 
@@ -1002,6 +1209,13 @@ function renderMoje() {
     });
   });
   document.getElementById('myMatchList').innerHTML = html;
+  // Confetti przy dokładnych trafieniach
+  setTimeout(() => {
+    document.querySelectorAll('[data-confetti="1"]').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      launchConfetti(rect.left + rect.width/2, rect.top + window.scrollY);
+    });
+  }, 300);
 }
 
 function getPlayerExact(nick) {
@@ -1158,6 +1372,220 @@ function renderTabela() {
 
   document.getElementById('groupTables').innerHTML = groupTablesHtml + thirdHtml;
 }
+
+function renderStatystyki() {
+  recalcPoints();
+  const matches = getMatches();
+  const official = state.official;
+  const approved = Object.keys(state.players).filter(nick => {
+    const p = state.players[nick];
+    return typeof p === 'object' ? p.status === 'approved' : p === 'approved';
+  });
+
+  if (!approved.length) {
+    document.getElementById('statsContent').innerHTML = '<p style="color:var(--muted);font-size:13px;">Brak zatwierdzonych graczy.</p>';
+    return;
+  }
+
+  // Kolory dla graczy
+  const COLORS = ['#00c853','#ffd600','#64a0ff','#ff6b35','#c084fc','#f472b6','#34d399','#fb923c','#a78bfa','#60a5fa','#f87171','#4ade80'];
+
+  // --- ZBIERZ STATYSTYKI NA GRACZA ---
+  const playerStats = {};
+  approved.forEach((nick, idx) => {
+    const preds = state.predictions[nick] || {};
+    let exact=0, result=0, miss=0, total=0;
+    let streak=0, maxStreak=0, curStreak=0;
+    const roundPts = {}; // punkty po kolejkach
+
+    matches.forEach(m => {
+      const off = official[m.id];
+      const pred = preds[m.id];
+      if (!off || off.h==='' || off.a==='') return;
+      if (!pred || pred.h==='' || pred.a==='') { miss++; total++; curStreak=0; return; }
+      total++;
+      const oh=parseInt(off.h),oa=parseInt(off.a),ph=parseInt(pred.h),pa=parseInt(pred.a);
+      let pts = 0;
+      if (oh===ph&&oa===pa) { exact++; pts=3; curStreak++; }
+      else if (Math.sign(oh-oa)===Math.sign(ph-pa)) { result++; pts=1; curStreak++; }
+      else { miss++; curStreak=0; }
+      maxStreak = Math.max(maxStreak, curStreak);
+
+      // Przypisz do kolejki (round)
+      const round = m.phase==='group' ? (
+        m.id.match(/g[A-L][12]$/) ? 'I kolejka' :
+        m.id.match(/g[A-L][34]$/) ? 'II kolejka' :
+        m.id.match(/g[A-L][56]$/) ? 'III kolejka' : 'Inne'
+      ) : (
+        m.phase==='r16' ? '1/16' : m.phase==='r8' ? '1/8' :
+        m.phase==='qf' ? 'Ćwierćf.' : m.phase==='sf' ? 'Półfinały' : 'Finał'
+      );
+      if (!roundPts[round]) roundPts[round] = 0;
+      roundPts[round] += pts;
+    });
+
+    playerStats[nick] = {
+      nick, color: COLORS[idx % COLORS.length],
+      display: getDisplayName(nick),
+      pts: state.points[nick]||0,
+      exact, result, miss, total,
+      pct: total > 0 ? Math.round((exact+result)/total*100) : 0,
+      exactPct: total > 0 ? Math.round(exact/total*100) : 0,
+      maxStreak, roundPts
+    };
+  });
+
+  const statsList = Object.values(playerStats).sort((a,b) => b.pts - a.pts);
+
+  // --- MOJE STATYSTYKI (zalogowany gracz) ---
+  const me = playerStats[currentUser];
+  const mySection = me ? `
+    <div class="stats-section">
+      <div class="stats-section-title">Twoje statystyki – ${me.display}</div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-num">${me.pts}</div><div class="stat-label">Punkty</div></div>
+        <div class="stat-card"><div class="stat-num gold">${me.exact}</div><div class="stat-label">Dokładne</div></div>
+        <div class="stat-card"><div class="stat-num">${me.result}</div><div class="stat-label">Wyniki</div></div>
+        <div class="stat-card"><div class="stat-num red">${me.miss}</div><div class="stat-label">Pudła</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#64a0ff">${me.pct}%</div><div class="stat-label">Skuteczność</div></div>
+        <div class="stat-card"><div class="stat-num gold">${me.maxStreak}</div><div class="stat-label">Naj. seria</div></div>
+      </div>
+    </div>` : '';
+
+  // --- WYKRES PUNKTÓW (SVG) ---
+  const roundLabels = ['I kolejka','II kolejka','III kolejka','1/16','1/8','Ćwierćf.','Półfinały','Finał'];
+  const presentRounds = roundLabels.filter(r => statsList.some(p => p.roundPts[r] > 0));
+
+  let chartHtml = '';
+  if (presentRounds.length >= 2) {
+    const W = 560, H = 200, PAD = {t:20, r:20, b:36, l:40};
+    const cW = W - PAD.l - PAD.r;
+    const cH = H - PAD.t - PAD.b;
+
+    // Skumulowane punkty po rundach
+    const cumData = statsList.map(p => {
+      let cum = 0;
+      return presentRounds.map(r => { cum += (p.roundPts[r]||0); return cum; });
+    });
+    const maxVal = Math.max(...cumData.flat(), 1);
+
+    const xPos = i => PAD.l + (i / (presentRounds.length-1)) * cW;
+    const yPos = v => PAD.t + cH - (v / maxVal) * cH;
+
+    const lines = statsList.map((p, pi) => {
+      const pts = cumData[pi];
+      const d = pts.map((v,i) => `${i===0?'M':'L'}${xPos(i).toFixed(1)},${yPos(v).toFixed(1)}`).join(' ');
+      const last = pts[pts.length-1];
+      const lx = xPos(pts.length-1), ly = yPos(last);
+      return `<path d="${d}" fill="none" stroke="${p.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>
+        <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4" fill="${p.color}"/>`;
+    }).join('');
+
+    const xLabels = presentRounds.map((r,i) =>
+      `<text x="${xPos(i).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="10" fill="var(--muted)">${r}</text>`
+    ).join('');
+
+    const gridLines = [0,0.25,0.5,0.75,1].map(f => {
+      const y = PAD.t + cH * (1-f);
+      const val = Math.round(f * maxVal);
+      return `<line x1="${PAD.l}" y1="${y.toFixed(1)}" x2="${W-PAD.r}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+        <text x="${PAD.l-5}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--muted)">${val}</text>`;
+    }).join('');
+
+    const legend = statsList.map(p =>
+      `<div class="legend-item"><span class="legend-dot" style="background:${p.color}"></span>${p.display}</div>`
+    ).join('');
+
+    chartHtml = `
+    <div class="stats-section">
+      <div class="stats-section-title">Punkty po kolejkach (skumulowane)</div>
+      <div class="chart-wrap">
+        <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+          ${gridLines}${lines}${xLabels}
+        </svg>
+        <div class="chart-legend">${legend}</div>
+      </div>
+    </div>`;
+  }
+
+  // --- SKUTECZNOŚĆ ---
+  const effHtml = `
+    <div class="stats-section">
+      <div class="stats-section-title">Skuteczność typowania (%)</div>
+      ${statsList.map(p => `
+        <div class="eff-row">
+          <div class="eff-name">${p.display}</div>
+          <div class="eff-bar-wrap">
+            <div class="eff-bar" style="width:${p.pct}%;background:${p.color};"></div>
+          </div>
+          <div class="eff-pct">${p.pct}%</div>
+        </div>`).join('')}
+      <p style="font-size:11px;color:var(--muted);margin-top:6px;">Trafiony wynik lub dokładny wynik = sukces</p>
+    </div>`;
+
+  // --- DOKŁADNE WYNIKI % ---
+  const exactHtml = `
+    <div class="stats-section">
+      <div class="stats-section-title">Dokładne wyniki (%)</div>
+      ${statsList.map(p => `
+        <div class="eff-row">
+          <div class="eff-name">${p.display}</div>
+          <div class="eff-bar-wrap">
+            <div class="eff-bar" style="width:${p.exactPct}%;background:var(--gold);"></div>
+          </div>
+          <div class="eff-pct">${p.exactPct}%</div>
+        </div>`).join('')}
+    </div>`;
+
+  // --- NAJLEPSZA SERIA ---
+  const streakHtml = `
+    <div class="stats-section">
+      <div class="stats-section-title">🔥 Najlepsza seria trafionych</div>
+      ${statsList.map(p => `
+        <div class="streak-row">
+          <div class="streak-name">${p.display}</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:12px;color:var(--muted);">${'🔥'.repeat(Math.min(p.maxStreak,10))}</div>
+            <div class="streak-val">${p.maxStreak}</div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+
+  // --- ZESTAWIENIE ZBIORCZE ---
+  const tableHtml = `
+    <div class="stats-section">
+      <div class="stats-section-title">Zestawienie zbiorcze</div>
+      <div style="overflow-x:auto;">
+        <table class="ranking-table">
+          <thead><tr>
+            <th>Gracz</th>
+            <th style="text-align:center;">Pkt</th>
+            <th style="text-align:center;">🎯 Dokł.</th>
+            <th style="text-align:center;">✅ Wynik</th>
+            <th style="text-align:center;">❌ Pudło</th>
+            <th style="text-align:center;">% skut.</th>
+          </tr></thead>
+          <tbody>
+            ${statsList.map((p,i) => `<tr style="${p.nick===currentUser?'background:rgba(0,200,83,0.05)':''}">
+              <td style="font-weight:500;display:flex;align-items:center;gap:6px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:${p.color};display:inline-block;flex-shrink:0;"></span>
+                ${p.display}${p.nick===currentUser?' <span style="font-size:10px;color:var(--muted)">(Ty)</span>':''}
+              </td>
+              <td style="text-align:center;font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:var(--green);">${p.pts}</td>
+              <td style="text-align:center;color:var(--gold);">${p.exact}</td>
+              <td style="text-align:center;">${p.result}</td>
+              <td style="text-align:center;color:var(--red);">${p.miss}</td>
+              <td style="text-align:center;color:#64a0ff;">${p.pct}%</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+
+  document.getElementById('statsContent').innerHTML = mySection + chartHtml + effHtml + exactHtml + streakHtml + tableHtml;
+}
+
+window.renderStatystyki = renderStatystyki;
 
 function renderGracze() {
   const approved = Object.keys(state.players).filter(nick => {
@@ -1421,6 +1849,8 @@ window.stickyAction       = stickyAction;
 window.setStickyBar       = setStickyBar;
 window.resetAllResults    = resetAllResults;
 window.checkNewResults    = checkNewResults;
+window.setTheme          = setTheme;
+window.launchConfetti    = launchConfetti;
 window.handleLoginKey   = handleLoginKey;
 window.loginPlayer      = loginPlayer;
 window.loginAdmin       = loginAdmin;
