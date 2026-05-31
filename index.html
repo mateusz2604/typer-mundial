@@ -623,7 +623,10 @@ nav::-webkit-scrollbar { display: none; }
 
   <!-- CZAT LIVE -->
   <div class="page" id="page-czat">
-    <p class="page-title">💬 <span>Czat Live</span></p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+      <p class="page-title" style="margin:0;">💬 <span>Czat Live</span></p>
+      <button id="clearChatBtn" onclick="clearChat()" style="display:none;background:rgba(229,57,53,0.15);border:1px solid var(--red);color:var(--red);border-radius:8px;padding:7px 14px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">🗑️ Wyczyść czat</button>
+    </div>
     <div id="chatMessages" style="height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;padding:4px 0;"></div>
     <div style="display:flex;gap:8px;">
       <input id="chatInput" class="comment-input" placeholder="Napisz wiadomość..." maxlength="300" onkeydown="if(event.key==='Enter')sendChat()"/>
@@ -1531,7 +1534,11 @@ function showPage(name, btn) {
   if (name==='tabela') renderTabela();
   if (name==='statystyki') renderStatystyki();
   if (name==='drabinka') renderDrabinka();
-  if (name==='czat') renderCzat();
+  if (name==='czat') {
+    renderCzat();
+    const btn = document.getElementById('clearChatBtn');
+    if (btn) btn.style.display = isAdmin ? 'block' : 'none';
+  }
   if (name==='porownaj') renderPorownaj();
   if (name==='gracze') renderGracze();
 }
@@ -2431,6 +2438,13 @@ function renderDrabinka() {
 // ── CZAT LIVE ────────────────────────────────────────────────
 let chatListener = null;
 
+async function clearChat() {
+  if (!isAdmin) return;
+  if (!confirm('Czy na pewno chcesz usunąć całą historię czatu? Tej operacji nie można cofnąć.')) return;
+  await fbRemove('chat');
+  showToast('✓ Czat wyczyszczony!');
+}
+
 function renderCzat() {
   const container = document.getElementById('chatMessages');
   if (chatListener) return; // już słuchamy
@@ -2576,6 +2590,7 @@ function renderPorownaj(targetNick) {
 }
 
 window.renderPorownaj = renderPorownaj;
+window.clearChat      = clearChat;
 window.renderCzat     = renderCzat;
 window.sendChat       = sendChat;
 window.renderDrabinka = renderDrabinka;
