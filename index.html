@@ -158,14 +158,6 @@
 .theme-opt:hover { background: var(--bg3); }
 .theme-opt.active { color: var(--green); font-weight: 500; }
 
-/* CONFETTI */
-.confetti-piece {
-  position: fixed; width: 8px; height: 8px; border-radius: 2px;
-  pointer-events: none; z-index: 9999;
-  animation: confetti-fall linear forwards;
-}
-@keyframes confetti-fall {
-  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -270,7 +262,7 @@ nav::-webkit-scrollbar { display: none; }
 /* MATCH CARDS */
 .match-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.2s; position: relative; overflow: hidden; }
 .match-card:hover { border-color: rgba(128,128,128,0.25); }
-.match-card-flag-bg { position: absolute; inset: 0; opacity: 0.04; pointer-events: none; display: flex; }
+.match-card-flag-bg { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; pointer-events: none; display: flex; flex-direction: column; border-radius: 12px 0 0 12px; overflow: hidden; }
 .match-card-flag-bg .flag-left { flex: 1; }
 .match-card-flag-bg .flag-right { flex: 1; }
 .match-card > * { position: relative; z-index: 1; }
@@ -439,16 +431,6 @@ nav::-webkit-scrollbar { display: none; }
 .group-pts { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--green); }
 .group-num { color: var(--muted); font-size: 13px; }
 .adv-badge { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 4px; vertical-align: middle; }
-/* AVATAR PICKER */
-.avatar-picker { margin-top: 6px; }
-.avatar-emojis { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
-.avatar-emoji-btn { width: 36px; height: 36px; border-radius: 8px; border: 2px solid transparent; background: var(--bg3); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, transform 0.1s; }
-.avatar-emoji-btn.selected { border-color: var(--green); transform: scale(1.1); }
-.avatar-colors { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-.avatar-color-btn { width: 26px; height: 26px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: border-color 0.15s, transform 0.1s; flex-shrink: 0; }
-.avatar-color-btn.selected { border-color: var(--text); transform: scale(1.15); }
-.avatar-preview-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
-.avatar-preview { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: background 0.2s; }
 </style>
 
 <!-- LOGIN -->
@@ -466,16 +448,6 @@ nav::-webkit-scrollbar { display: none; }
       <label>Hasło grupowe</label>
       <input type="password" id="passInput" placeholder="••••••••" onkeydown="handleLoginKey(event,'pass')"/>
     </div>
-    <div class="form-group">
-      <label>Avatar</label>
-      <div class="avatar-picker">
-        <div class="avatar-preview-wrap">
-          <div class="avatar-preview" id="avatarPreview" style="background:#009624;">⚽</div>
-        </div>
-        <div class="avatar-emojis" id="avatarEmojis"></div>
-        <div class="avatar-colors" id="avatarColors"></div>
-      </div>
-    </div>
     <div class="error-msg" id="loginError"></div>
     <button class="btn" onclick="loginPlayer()">Wchodzę ⚽</button>
     <button class="btn secondary" onclick="showAdminLogin()">Zaloguj jako admin</button>
@@ -490,6 +462,59 @@ nav::-webkit-scrollbar { display: none; }
     <div class="error-msg" id="adminError">Błędne hasło admina!</div>
     <button class="btn" onclick="loginAdmin()">Zaloguj admina</button>
     <button class="btn secondary" onclick="showPlayerLogin()">← Powrót</button>
+  </div>
+</div>
+
+<!-- EKRAN PROFILU -->
+<div id="profileScreen" style="display:none;position:fixed;inset:0;background:var(--bg);z-index:9998;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:380px;width:100%;padding:2rem;">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:44px;margin-bottom:8px;">👤</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.06em;color:var(--text);">Uzupełnij profil</h2>
+      <p style="font-size:13px;color:var(--muted);margin-top:6px;">Wpisz swoje imię i nazwisko – będzie widoczne w rankingu. Zrobisz to tylko raz!</p>
+    </div>
+    <div class="form-group">
+      <label>Imię i nazwisko</label>
+      <input type="text" id="profileNameInput" placeholder="np. Jan Kowalski" maxlength="40" onkeydown="if(event.key==='Enter')saveProfile()"/>
+    </div>
+    <div class="error-msg" id="profileError" style="display:none;margin-bottom:8px;">Wpisz imię i nazwisko!</div>
+    <button class="btn" onclick="saveProfile()" style="margin-top:8px;">✓ Zapisz i wchodzę</button>
+  </div>
+</div>
+
+<!-- EKRAN POWITALNY -->
+<div id="welcomeScreen" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:440px;width:100%;padding:2rem;max-height:90vh;overflow-y:auto;">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:48px;margin-bottom:8px;">⚽</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.06em;color:var(--text);">Witaj w Typerze MŚ 2026!</h2>
+      <p style="font-size:13px;color:var(--muted);margin-top:4px;">Przeczytaj zanim zaczniesz typować</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:1.5rem;">
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:20px;">✏️</span>
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:2px;">Typowanie</div><div style="font-size:12px;color:var(--muted);">Wpisz przewidywany wynik przed każdym meczem. Typowanie jest zablokowane po starcie meczu.</div></div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:20px;">🎯</span>
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:2px;">Punktacja</div><div style="font-size:12px;color:var(--muted);"><b style="color:var(--green);">+3 pkt</b> za dokładny wynik (np. 2:1 i 2:1) · <b style="color:var(--gold);">+1 pkt</b> za trafiony wynik (np. wygrana/remis/porażka) · <b style="color:var(--red);">0 pkt</b> za pudło</div></div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:20px;">💾</span>
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:2px;">Zapisywanie</div><div style="font-size:12px;color:var(--muted);">Kliknij <b>„Zapisz typowania"</b> na dole strony żeby zatwierdzić swoje typy. Możesz je zmieniać do momentu startu meczu.</div></div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:20px;">📊</span>
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:2px;">Co znajdziesz w aplikacji?</div><div style="font-size:12px;color:var(--muted);">Ranking · Tabela grup · Statystyki · Drabinka turniejowa · Czat live · Porównanie z graczami · Typowanie mistrza</div></div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;">
+        <span style="font-size:20px;">📱</span>
+        <div><div style="font-weight:600;font-size:14px;margin-bottom:2px;">Instalacja na telefonie</div><div style="font-size:12px;color:var(--muted);">Chrome: menu ⋮ → „Dodaj do ekranu głównego" · Safari: ikona 📤 → „Dodaj do ekranu"</div></div>
+      </div>
+    </div>
+    <button onclick="closeWelcome()" style="width:100%;padding:14px;background:var(--green);color:var(--btn-color,#000);border:none;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.08em;cursor:pointer;">
+      ⚽ Rozumiem, zaczynam typować!
+    </button>
   </div>
 </div>
 
@@ -855,16 +880,59 @@ let DEFAULT_MATCHES = [
   {id:'final',date:'26.07',time:'21:00',group:'Finał',home:'W sf1',away:'W sf2',phase:'final'},
 ];
 
-// ── EKSPORT RANKINGU ────────────────────────────────────────
+function needsProfile() {
+  if (!currentUser || isAdmin) return false;
+  const p = state.players[currentUser];
+  if (!p || typeof p !== 'object') return false;
+  // Profil niekompletny gdy displayName nie istnieje lub równa się nickowi
+  const dn = p.displayName || '';
+  return !dn || dn.trim() === currentUser.trim();
+}
+
+function showProfileScreen() {
+  document.getElementById('profileScreen').style.display = 'flex';
+  setTimeout(() => document.getElementById('profileNameInput')?.focus(), 100);
+}
+
+async function saveProfile() {
+  const inp = document.getElementById('profileNameInput');
+  const err = document.getElementById('profileError');
+  const name = inp?.value.trim();
+  if (!name || name.length < 2) {
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  // Zapisz displayName w Firebase
+  await fbSet(`players/${currentUser}/displayName`, name);
+  state.players[currentUser].displayName = name;
+  document.getElementById('profileScreen').style.display = 'none';
+  showToast(`✓ Witaj, ${name}!`);
+  showWelcomeIfNeeded();
+}
+
+window.saveProfile = saveProfile;
+function showWelcomeIfNeeded() {
+  if (!localStorage.getItem('ms26_welcomed')) {
+    document.getElementById('welcomeScreen').style.display = 'flex';
+  }
+}
+function closeWelcome() {
+  localStorage.setItem('ms26_welcomed', '1');
+  document.getElementById('welcomeScreen').style.display = 'none';
+}
+window.closeWelcome = closeWelcome;
+
+// ── EKSPORT RANKINGU (ulepszony) ─────────────────────────────
 async function exportRanking() {
   const theme = document.documentElement.getAttribute('data-theme') || 'noc';
   const isDark = theme !== 'jasny';
-  const bg = isDark ? (theme==='standard'?'#0a1628':theme==='ciemny'?'#0d0d0d':'#0a0e0a') : '#f6f8fa';
-  const bg2 = isDark ? (theme==='standard'?'#0f2040':theme==='ciemny'?'#161616':'#111611') : '#ffffff';
-  const accent = theme==='standard' ? '#f5c518' : theme==='jasny' ? '#1a7f37' : '#00c853';
+  const bg      = isDark ? (theme==='standard'?'#0a1628':theme==='ciemny'?'#0d0d0d':theme==='czerwony'?'#120508':theme==='fiolet'?'#0d0818':theme==='ocean'?'#050e1a':theme==='pomaranczowy'?'#130a00':'#0a0e0a') : '#f6f8fa';
+  const bg2     = isDark ? (theme==='standard'?'#0f2040':theme==='ciemny'?'#161616':'#111611') : '#ffffff';
+  const accent  = theme==='standard'?'#f5c518':theme==='jasny'?'#1a7f37':theme==='czerwony'?'#ff4060':theme==='fiolet'?'#a855f7':theme==='ocean'?'#38bdf8':theme==='pomaranczowy'?'#f97316':'#00c853';
   const textCol = isDark ? '#f0f4f0' : '#1f2328';
-  const mutedCol = isDark ? '#7a907a' : '#636c76';
-  const borderCol = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+  const mutedCol= isDark ? '#888' : '#636c76';
+  const borderCol=isDark?'rgba(255,255,255,0.1)':'rgba(0,0,0,0.08)';
 
   recalcPoints();
   const approved = Object.keys(state.players).filter(nick => {
@@ -876,64 +944,105 @@ async function exportRanking() {
     exact: getPlayerExact(nick)
   })).sort((a,b)=>b.pts-a.pts||b.exact-a.exact);
 
-  const W = 560, ROW = 52, PAD = 24;
-  const H = PAD*2 + 70 + rows.length * ROW + 40;
+  const W=600, ROW=58, HEADER=110, FOOTER=36, PAD=28;
+  const H = HEADER + rows.length*ROW + FOOTER + PAD;
   const canvas = document.getElementById('rankingCanvas');
-  canvas.width = W; canvas.height = H;
+  canvas.width=W; canvas.height=H;
   const ctx = canvas.getContext('2d');
 
-  // Tło
-  ctx.fillStyle = bg;
+  // Tło gradientowe
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, bg);
+  grad.addColorStop(1, isDark ? (bg+'dd') : '#eef2f7');
+  ctx.fillStyle = grad;
   ctx.fillRect(0,0,W,H);
 
-  // Nagłówek
+  // Górna belka akcentu
   ctx.fillStyle = accent;
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText('TYPER MŚ 2026', PAD, PAD+28);
+  ctx.fillRect(0,0,W,4);
+
+  // Logo
+  ctx.fillStyle = accent;
+  ctx.font = 'bold 32px sans-serif';
+  ctx.fillText('TYPER MŚ 2026', PAD, 46);
+
+  // Data i info
   ctx.fillStyle = mutedCol;
   ctx.font = '13px sans-serif';
-  ctx.fillText('Ranking graczy · ' + new Date().toLocaleDateString('pl-PL'), PAD, PAD+50);
+  const dateStr = new Date().toLocaleDateString('pl-PL', {day:'2-digit',month:'long',year:'numeric'});
+  ctx.fillText(`Ranking · ${dateStr}`, PAD, 68);
 
-  // Linia
+  // Linia pod nagłówkiem
   ctx.strokeStyle = borderCol;
   ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(PAD, PAD+62); ctx.lineTo(W-PAD, PAD+62); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD,86); ctx.lineTo(W-PAD,86); ctx.stroke();
 
-  const medals = ['🥇','🥈','🥉'];
-  const colors = ['#ffd600','#aaaaaa','#cd7f32'];
+  // Nagłówki kolumn
+  ctx.fillStyle = mutedCol;
+  ctx.font = '11px sans-serif';
+  ctx.fillText('#', PAD, 104);
+  ctx.fillText('GRACZ', PAD+44, 104);
+  ctx.fillText('DOKŁADNE', W-PAD-160, 104);
+  ctx.textAlign='right';
+  ctx.fillText('PUNKTY', W-PAD, 104);
+  ctx.textAlign='left';
 
-  rows.forEach((r, i) => {
-    const y = PAD + 70 + i*ROW;
+  const medals=['🥇','🥈','🥉'];
+  const podiumColors=['#ffd600','#aaaaaa','#cd7f32'];
+
+  rows.forEach((r,i) => {
+    const y = HEADER + i*ROW;
+
     // Tło wiersza
-    if (i < 3) {
-      ctx.fillStyle = isDark ? `rgba(${i===0?'255,214,0':i===1?'170,170,170':'205,127,50'},0.06)` : `rgba(${i===0?'255,214,0':i===1?'170,170,170':'205,127,50'},0.08)`;
+    if (i%2===0) {
+      ctx.fillStyle = isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)';
+      ctx.fillRect(PAD-8, y+2, W-PAD*2+16, ROW-4);
+    }
+    if (i<3) {
+      ctx.fillStyle = `rgba(${i===0?'255,214,0':i===1?'180,180,180':'205,127,50'},0.08)`;
       ctx.beginPath();
-      ctx.roundRect(PAD-8, y-6, W-PAD*2+16, ROW-4, 8);
+      if (ctx.roundRect) ctx.roundRect(PAD-8, y+2, W-PAD*2+16, ROW-4, 8);
+      else ctx.rect(PAD-8, y+2, W-PAD*2+16, ROW-4);
       ctx.fill();
     }
-    // Pozycja
-    ctx.font = 'bold 22px sans-serif';
-    ctx.fillStyle = i < 3 ? colors[i] : mutedCol;
-    ctx.fillText(i < 3 ? medals[i] : `${i+1}.`, PAD, y+26);
+
+    // Pozycja / medal
+    ctx.font = i<3 ? 'bold 22px sans-serif' : '16px sans-serif';
+    ctx.fillStyle = i<3 ? podiumColors[i] : mutedCol;
+    ctx.fillText(i<3 ? medals[i] : `${i+1}.`, PAD, y+ROW-16);
+
+    // Pasek koloru po lewej dla top3
+    if (i<3) {
+      ctx.fillStyle = podiumColors[i];
+      ctx.fillRect(PAD-8, y+2, 3, ROW-4);
+    }
+
     // Nazwa
-    ctx.font = '500 18px sans-serif';
+    ctx.font = `${i===0?'bold ':''} 17px sans-serif`;
     ctx.fillStyle = textCol;
-    ctx.fillText(r.display, PAD+46, y+26);
+    const name = r.display.length > 22 ? r.display.slice(0,20)+'…' : r.display;
+    ctx.fillText(name, PAD+44, y+ROW-16);
+
     // Dokładne
-    ctx.font = '13px sans-serif';
-    ctx.fillStyle = mutedCol;
-    ctx.fillText(`🎯 ${r.exact} dokł.`, W-PAD-160, y+26);
-    // Punkty
-    ctx.font = 'bold 26px sans-serif';
+    ctx.font = '14px sans-serif';
     ctx.fillStyle = accent;
-    ctx.textAlign = 'right';
-    ctx.fillText(`${r.pts} pkt`, W-PAD, y+28);
-    ctx.textAlign = 'left';
+    ctx.fillText(`🎯 ${r.exact}`, W-PAD-155, y+ROW-16);
+
+    // Punkty
+    ctx.font = `bold 24px sans-serif`;
+    ctx.fillStyle = accent;
+    ctx.textAlign='right';
+    ctx.fillText(`${r.pts}`, W-PAD-40, y+ROW-14);
+    ctx.font = '11px sans-serif';
+    ctx.fillStyle = mutedCol;
+    ctx.fillText('pkt', W-PAD, y+ROW-14);
+    ctx.textAlign='left';
+
     // Separator
-    if (i < rows.length-1) {
+    if (i<rows.length-1) {
       ctx.strokeStyle = borderCol;
-      ctx.lineWidth = 0.5;
-      ctx.beginPath(); ctx.moveTo(PAD+40,y+ROW-4); ctx.lineTo(W-PAD,y+ROW-4); ctx.stroke();
+      ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(PAD+40, y+ROW); ctx.lineTo(W-PAD, y+ROW); ctx.stroke();
     }
   });
 
@@ -941,34 +1050,16 @@ async function exportRanking() {
   ctx.fillStyle = mutedCol;
   ctx.font = '11px sans-serif';
   ctx.fillText('typymundial.netlify.app', PAD, H-10);
+  ctx.textAlign='right';
+  ctx.fillText('⚽ FIFA World Cup 2026', W-PAD, H-10);
+  ctx.textAlign='left';
 
-  // Pobierz
   const link = document.createElement('a');
-  link.download = 'ranking-ms2026.png';
+  link.download = `ranking-ms2026-${new Date().toLocaleDateString('pl-PL').replace(/\./g,'-')}.png`;
   link.href = canvas.toDataURL('image/png');
   link.click();
   showToast('✓ Obrazek pobrany!');
 }
-
-
-// ── RESET TYPOWANIA ──────────────────────────────────────────
-async function resetPrediction(matchId) {
-  const m = getMatches().find(x => x.id === matchId);
-  if (!m || isMatchLocked(m)) return;
-  if (!state.predictions[currentUser]) return;
-  delete state.predictions[currentUser][matchId];
-  await fbSet('predictions/' + currentUser, state.predictions[currentUser]);
-  // Tylko zeruj inputy w DOM – nie rerenderuj (akordeony zostają otwarte)
-  const hEl = document.getElementById(matchId+'_h');
-  const aEl = document.getElementById(matchId+'_a');
-  if (hEl) hEl.value = '';
-  if (aEl) aEl.value = '';
-  // Ukryj przycisk usuń
-  const btn = hEl?.closest('.match-card')?.querySelector('[title="Usuń typ"]');
-  if (btn) btn.parentElement.style.display = 'none';
-  showToast('✓ Typ usunięty');
-}
-
 // ── PUSH NOTIFICATIONS ───────────────────────────────────────
 let pushEnabled = false;
 
@@ -1073,27 +1164,6 @@ function toggleThemeMenu() {
     });
   });
 })();
-
-// ── CONFETTI ─────────────────────────────────────────────────
-function launchConfetti(x, y) {
-  const colors = ['#00c853','#ffd600','#ff6b35','#64a0ff','#f472b6','#34d399','#fb923c'];
-  for (let i = 0; i < 60; i++) {
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    el.style.cssText = `
-      left: ${x - 30 + Math.random()*60}px;
-      top: ${y}px;
-      background: ${colors[Math.floor(Math.random()*colors.length)]};
-      width: ${4 + Math.random()*8}px;
-      height: ${4 + Math.random()*8}px;
-      animation-duration: ${1.5 + Math.random()*1.5}s;
-      animation-delay: ${Math.random()*0.4}s;
-      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
-    `;
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3500);
-  }
-}
 
 // ── KOLORY REPREZENTACJI (do tła kart) ───────────────────────
 const TEAM_COLORS = {
@@ -1253,62 +1323,10 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ── AVATAR ───────────────────────────────────────────────────
-const AVATAR_EMOJIS = ['⚽','🦁','🔥','⚡','🦅','🐉','🌟','🏆','👑','🎯','🦊','🐺','🤺','🥊','🎪','🚀','🌊','❄️','🎭','🦋'];
-const AVATAR_COLORS = ['#009624','#0969da','#c9a000','#cc2040','#8b3fd4','#c2410c','#0e7490','#166534','#7c3aed','#be185d','#374151','#b45309'];
 
-let selectedEmoji = '⚽';
-let selectedColor = '#009624';
 
-function initAvatarPicker() {
-  const emojisEl = document.getElementById('avatarEmojis');
-  const colorsEl = document.getElementById('avatarColors');
-  if (!emojisEl) return;
-
-  emojisEl.innerHTML = AVATAR_EMOJIS.map(e =>
-    `<button class="avatar-emoji-btn${e===selectedEmoji?' selected':''}" onclick="pickEmoji('${e}')">${e}</button>`
-  ).join('');
-
-  colorsEl.innerHTML = AVATAR_COLORS.map(c =>
-    `<button class="avatar-color-btn${c===selectedColor?' selected':''}" onclick="pickColor('${c}')" style="background:${c};"></button>`
-  ).join('');
-
-  updateAvatarPreview();
-}
-
-function pickEmoji(e) {
-  selectedEmoji = e;
-  document.querySelectorAll('.avatar-emoji-btn').forEach(b => b.classList.toggle('selected', b.textContent===e));
-  updateAvatarPreview();
-}
-
-function pickColor(c) {
-  selectedColor = c;
-  document.querySelectorAll('.avatar-color-btn').forEach(b => b.classList.toggle('selected', b.style.background===c||b.style.backgroundColor===c));
-  updateAvatarPreview();
-}
-
-function updateAvatarPreview() {
-  const p = document.getElementById('avatarPreview');
-  if (p) { p.style.background = selectedColor; p.textContent = selectedEmoji; }
-}
-
-function getAvatarEl(emoji, color, size=32) {
-  return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*0.55)}px;flex-shrink:0;">${emoji}</div>`;
-}
-
-function getPlayerAvatar(nick) {
-  const p = state.players[nick];
-  const emoji = (typeof p==='object' && p.avatarEmoji) ? p.avatarEmoji : '⚽';
-  const color = (typeof p==='object' && p.avatarColor) ? p.avatarColor : '#009624';
-  return { emoji, color };
-}
-
-window.pickEmoji = pickEmoji;
-window.pickColor = pickColor;
-
-// Inicjuj picker po załadowaniu
-document.addEventListener('DOMContentLoaded', initAvatarPicker);
+function showAdminLogin() { document.getElementById('loginForm').style.display='none'; document.getElementById('adminForm').style.display='block'; }
+function showPlayerLogin() { document.getElementById('adminForm').style.display='none'; document.getElementById('loginForm').style.display='block'; }
 
 function handleLoginKey(event, field) {
   if (event.key !== 'Enter') return;
@@ -1333,9 +1351,8 @@ async function loginPlayer() {
 
   if (status !== 'approved') {
     if (!player) {
-      const avatarData = { status: 'pending', displayName: nick, avatarEmoji: selectedEmoji, avatarColor: selectedColor };
-      await fbSet('players/' + nick, avatarData);
-      state.players[nick] = avatarData;
+      await fbSet('players/' + nick, { status: 'pending', displayName: nick });
+      state.players[nick] = { status: 'pending', displayName: nick };
       err.style.display='block'; err.style.color='var(--green)';
       err.textContent='✓ Wniosek wysłany! Poczekaj na zatwierdzenie przez admina.'; return;
     } else if (status === 'pending') {
@@ -1385,12 +1402,16 @@ function enterApp() {
     showPage('gracze', document.getElementById('nav-gracze'));
   } else {
     document.getElementById('userNameDisplay').textContent = currentUser;
-    const av = getPlayerAvatar(currentUser);
-    const avatarEl = document.getElementById('userAvatar');
-    avatarEl.textContent = av.emoji;
-    avatarEl.style.background = av.color;
-    avatarEl.style.fontSize = '18px';
+    document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
     renderTypowanie();
+    // Sprawdź profil po załadowaniu danych z Firebase (krótkie opóźnienie)
+    setTimeout(() => {
+      if (needsProfile()) {
+        showProfileScreen();
+      } else {
+        showWelcomeIfNeeded();
+      }
+    }, 800);
   }
 }
 
@@ -1399,6 +1420,8 @@ function logout() {
   stopCountdownTicker();
   chatListener = null;
   porownajWith = null;
+  // Pełny reset stanu – żeby dane admina nie przeciekały do konta gracza
+  state = { players: {}, official: {}, predictions: {}, points: {}, matches: null };
   sessionStorage.removeItem('ms26_user');
   sessionStorage.removeItem('ms26_admin');
   currentUser=null; isAdmin=false;
@@ -1528,8 +1551,8 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
   const hFlag=teamFlag(m.home), aFlag=teamFlag(m.away);
   const hCol = teamColor(m.home), aCol = teamColor(m.away);
   const flagBg = `<div class="match-card-flag-bg">
-    <div class="flag-left" style="background:linear-gradient(to right,${hCol[0]},${hCol[1]});"></div>
-    <div class="flag-right" style="background:linear-gradient(to left,${aCol[0]},${aCol[1]});"></div>
+    <div class="flag-left" style="background:${hCol[0]};"></div>
+    <div class="flag-right" style="background:${aCol[0]};"></div>
   </div>`;
   return `<div class="match-card" style="${locked&&!disabled&&!forceUnlock?'opacity:0.85;':''}">
     ${flagBg}
@@ -1551,8 +1574,7 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
       </div>
       <div class="team-away"><span style="font-size:22px">${aFlag}</span><span class="team-name">${m.away}</span></div>
     </div>
-    ${resultBadge?`<div style="margin-top:8px;" ${showResult&&resultBadge.includes('dokładny')&&!forceUnlock?`data-confetti="1"`:''}>${resultBadge}</div>`:''}
-    ${!forceUnlock&&!disabled&&!locked&&(homeVal!==''||awayVal!=='')&&!showResult?`<div style="margin-top:6px;"><button onclick="event.stopPropagation();resetPrediction('${m.id}')" style="background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;padding:0;font-weight:500;" title="Usuń typ">✕ usuń typ</button></div>`:''}
+    ${resultBadge?`<div style="margin-top:8px;">${resultBadge}</div>`:''}
 
   </div>`;
 }
@@ -1681,13 +1703,6 @@ function renderMoje() {
     });
   });
   document.getElementById('myMatchList').innerHTML = html;
-  // Confetti przy dokładnych trafieniach
-  setTimeout(() => {
-    document.querySelectorAll('[data-confetti="1"]').forEach(el => {
-      const rect = el.getBoundingClientRect();
-      launchConfetti(rect.left + rect.width/2, rect.top + window.scrollY);
-    });
-  }, 300);
 }
 
 function getPlayerExact(nick) {
@@ -1726,7 +1741,6 @@ async function renderRanking() {
   document.getElementById('rankingBody').innerHTML = rows.length ? rows.map((r,i)=>{
     const curRank = i+1;
     const prevRank = prevRanks[r.nick];
-    const av = getPlayerAvatar(r.nick);
     let arrow = '';
     if (prevRank !== undefined && prevRank !== curRank) {
       if (curRank < prevRank) arrow = `<span class="rank-arrow-up" title="Awans o ${prevRank-curRank}">▲${prevRank-curRank}</span>`;
@@ -1739,8 +1753,7 @@ async function renderRanking() {
       <td class="rank-pos" style="${i<3?'color:'+['#ffd600','#aaa','#cd7f32'][i]:''}">${medals[i]||i+1}</td>
       <td style="font-weight:500;font-size:15px;">
         <div style="display:flex;align-items:center;gap:8px;">
-          ${getAvatarEl(av.emoji, av.color, 28)}
-          ${r.display}${r.nick===currentUser?' <span style="font-size:11px;color:var(--muted)">(Ty)</span>':!isAdmin?` <span style="font-size:10px;color:var(--muted)">⚔️</span>`:''}
+              ${r.display}${r.nick===currentUser?' <span style="font-size:11px;color:var(--muted)">(Ty)</span>':!isAdmin?` <span style="font-size:10px;color:var(--muted)">⚔️</span>`:''}
         </div>
       </td>
       <td style="text-align:center;">${arrow}</td>
@@ -2180,51 +2193,170 @@ window.renderMistrz = renderMistrz;
 window.saveMistrz   = saveMistrz;
 function renderDrabinka() {
   const off = state.official;
-  const KNOCKOUT_PHASES = [
-    { key:'r16', label:'1/16 finału',   ids: ['r16_01','r16_02','r16_03','r16_04','r16_05','r16_06','r16_07','r16_08','r16_09','r16_10','r16_11','r16_12','r16_13','r16_14','r16_15','r16_16'] },
-    { key:'r8',  label:'1/8 finału',    ids: ['r8_01','r8_02','r8_03','r8_04','r8_05','r8_06','r8_07','r8_08'] },
-    { key:'qf',  label:'Ćwierćfinały', ids: ['qf1','qf2','qf3','qf4'] },
-    { key:'sf',  label:'Półfinały',     ids: ['sf1','sf2'] },
-    { key:'f',   label:'Finał',         ids: ['final'] },
-  ];
   const allMatches = getMatches();
+
+  // Oblicz tabelę grup żeby wyciągnąć pary 1/16
+  const groups = {};
+  allMatches.filter(m => m.phase==='group' && /^[A-L]$/.test(m.group)).forEach(m => {
+    if (!groups[m.group]) groups[m.group] = {};
+    [m.home, m.away].forEach(t => {
+      if (!groups[m.group][t]) groups[m.group][t] = {team:t, pkt:0, bf:0, bc:0, m:0, w:0, r:0, p:0};
+    });
+    const o = off[m.id];
+    if (o && o.h!=='' && o.a!=='') {
+      const h=parseInt(o.h), a=parseInt(o.a);
+      const ht=groups[m.group][m.home], at=groups[m.group][m.away];
+      ht.m++; at.m++; ht.bf+=h; ht.bc+=a; at.bf+=a; at.bc+=h;
+      if (h>a){ht.w++;ht.pkt+=3;at.p++;}
+      else if(h<a){at.w++;at.pkt+=3;ht.p++;}
+      else{ht.r++;ht.pkt++;at.r++;at.pkt++;}
+    }
+  });
+
+  function sortGroup(teams) {
+    return teams.sort((a,b)=>b.pkt-a.pkt||(b.bf-b.bc)-(a.bf-a.bc)||b.bf-a.bf);
+  }
+
+  // Wyciągnij 1., 2., 3. z każdej grupy
+  const gPos = {}; // gPos['A'] = [1st, 2nd, 3rd, 4th]
+  'ABCDEFGHIJKL'.split('').forEach(g => {
+    const teams = groups[g] ? sortGroup(Object.values(groups[g])) : [];
+    gPos[g] = teams.map(t => t.team);
+  });
+
+  const get = (g, pos) => gPos[g]?.[pos] || '?';
+
+  // Klasyfikacja 3. miejsc – sortuj według tabeli 3. miejsc
+  const thirds = 'ABCDEFGHIJKL'.split('').map(g => groups[g] ? sortGroup(Object.values(groups[g]))[2] : null).filter(Boolean);
+  const sortedThirds = [...thirds].sort((a,b)=>b.pkt-a.pkt||(b.bf-b.bc)-(a.bf-a.bc)||b.bf-a.bf).map(t=>t.team);
+  const th = (i) => sortedThirds[i] || '?';
+
+  // Oficjalne pary 1/16 wg FIFA MŚ 2026 (48 drużyn)
+  // Format: [1A vs 2B], [1C vs 2D], itd. + 8 najlepszych 3. miejsc
+  const r16pairs = [
+    {id:'r16_01', home: get('A',0), away: get('B',1)},
+    {id:'r16_02', home: get('C',0), away: get('D',1)},
+    {id:'r16_03', home: get('E',0), away: get('F',1)},
+    {id:'r16_04', home: get('G',0), away: get('H',1)},
+    {id:'r16_05', home: get('I',0), away: get('J',1)},
+    {id:'r16_06', home: get('K',0), away: get('L',1)},
+    {id:'r16_07', home: get('B',0), away: get('A',1)},
+    {id:'r16_08', home: get('D',0), away: get('C',1)},
+    {id:'r16_09', home: get('F',0), away: get('E',1)},
+    {id:'r16_10', home: get('H',0), away: get('G',1)},
+    {id:'r16_11', home: get('J',0), away: get('I',1)},
+    {id:'r16_12', home: get('L',0), away: get('K',1)},
+    {id:'r16_13', home: th(0), away: th(1)},
+    {id:'r16_14', home: th(2), away: th(3)},
+    {id:'r16_15', home: th(4), away: th(5)},
+    {id:'r16_16', home: th(6), away: th(7)},
+  ];
+
+  // Mecze pucharowe z Firebase (z wpisanymi parami przez admina)
   const byId = {};
   allMatches.forEach(m => byId[m.id] = m);
 
-  function matchBlock(m) {
-    if (!m) return '<div class="bracket-match"><div class="bracket-team">TBD</div><div class="bracket-team">TBD</div></div>';
-    const result = off[m.id];
-    const played = result && result.h !== '' && result.a !== '';
-    let winner = null;
-    if (played) {
-      const h = parseInt(result.h), a = parseInt(result.a);
-      winner = h > a ? m.home : h < a ? m.away : null;
-    }
-    const hFlag = teamFlag(m.home), aFlag = teamFlag(m.away);
-    const hScore = played ? result.h : '';
-    const aScore = played ? result.a : '';
-    return `<div class="bracket-match">
-      <div class="bracket-team ${winner===m.home?'winner':''}">
-        <span style="font-size:14px;">${hFlag}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.home}</span>
-        <span class="bracket-score ${winner===m.home?'winner':''}">${hScore}</span>
-      </div>
-      <div class="bracket-team ${winner===m.away?'winner':''}">
-        <span style="font-size:14px;">${aFlag}</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.away}</span>
-        <span class="bracket-score ${winner===m.away?'winner':''}">${aScore}</span>
-      </div>
+  function teamBlock(name, score, isWinner) {
+    const flag = name && name !== '?' ? teamFlag(name) : '🏳️';
+    const display = name || 'TBD';
+    return `<div class="bracket-team ${isWinner?'winner':''}">
+      <span style="font-size:13px;">${flag}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;">${display}</span>
+      <span class="bracket-score ${isWinner?'winner':''}">${score}</span>
     </div>`;
   }
 
-  const rounds = KNOCKOUT_PHASES.map(phase => {
-    const matches = phase.ids.map(id => byId[id]).filter(Boolean);
-    const blocks = matches.map(m => `<div class="bracket-match-wrap">${matchBlock(m)}</div>`).join('');
-    return `<div class="bracket-round">
-      <div class="bracket-round-title">${phase.label}</div>
-      <div class="bracket-matches">${blocks || '<div style="color:var(--muted);font-size:12px;padding:8px;">Brak meczów</div>'}</div>
+  function matchBlock(home, away, matchId) {
+    const result = off[matchId];
+    const played = result && result.h!=='' && result.a!=='';
+    const hScore = played ? result.h : '';
+    const aScore = played ? result.a : '';
+    let winner = null;
+    if (played) {
+      const h=parseInt(result.h), a=parseInt(result.a);
+      winner = h>a ? home : h<a ? away : null;
+    }
+    const isEmpty = (!home || home==='?') && (!away || away==='?');
+    return `<div class="bracket-match" style="${isEmpty?'opacity:0.4':''}">
+      ${teamBlock(home||'TBD', hScore, winner===home)}
+      ${teamBlock(away||'TBD', aScore, winner===away)}
     </div>`;
-  }).join('<div style="width:2px;background:var(--border);align-self:stretch;margin-top:28px;border-radius:1px;"></div>');
+  }
 
-  document.getElementById('bracketContent').innerHTML = `<div class="bracket-wrap">${rounds}</div>`;
+  // Faza pucharowa – buduj rundy
+  // R16 – 16 meczów, R8 – 8, QF – 4, SF – 2, F – 1
+  function buildRound(pairs) {
+    return pairs.map(p => `<div class="bracket-match-wrap">${matchBlock(p.home, p.away, p.id)}</div>`).join('');
+  }
+
+  // R8 – zwycięzcy R16
+  function getWinner(matchId, home, away) {
+    const result = off[matchId];
+    if (!result || result.h==='' || result.a==='') return null;
+    const h=parseInt(result.h), a=parseInt(result.a);
+    return h>a ? home : h<a ? away : null;
+  }
+
+  const r8pairs = [
+    {id:'r8_01', home: getWinner('r16_01',r16pairs[0].home,r16pairs[0].away)||'W r16-1', away: getWinner('r16_02',r16pairs[1].home,r16pairs[1].away)||'W r16-2'},
+    {id:'r8_02', home: getWinner('r16_03',r16pairs[2].home,r16pairs[2].away)||'W r16-3', away: getWinner('r16_04',r16pairs[3].home,r16pairs[3].away)||'W r16-4'},
+    {id:'r8_03', home: getWinner('r16_05',r16pairs[4].home,r16pairs[4].away)||'W r16-5', away: getWinner('r16_06',r16pairs[5].home,r16pairs[5].away)||'W r16-6'},
+    {id:'r8_04', home: getWinner('r16_07',r16pairs[6].home,r16pairs[6].away)||'W r16-7', away: getWinner('r16_08',r16pairs[7].home,r16pairs[7].away)||'W r16-8'},
+    {id:'r8_05', home: getWinner('r16_09',r16pairs[8].home,r16pairs[8].away)||'W r16-9', away: getWinner('r16_10',r16pairs[9].home,r16pairs[9].away)||'W r16-10'},
+    {id:'r8_06', home: getWinner('r16_11',r16pairs[10].home,r16pairs[10].away)||'W r16-11', away: getWinner('r16_12',r16pairs[11].home,r16pairs[11].away)||'W r16-12'},
+    {id:'r8_07', home: getWinner('r16_13',r16pairs[12].home,r16pairs[12].away)||'W r16-13', away: getWinner('r16_14',r16pairs[13].home,r16pairs[13].away)||'W r16-14'},
+    {id:'r8_08', home: getWinner('r16_15',r16pairs[14].home,r16pairs[14].away)||'W r16-15', away: getWinner('r16_16',r16pairs[15].home,r16pairs[15].away)||'W r16-16'},
+  ];
+
+  const qfpairs = [
+    {id:'qf1', home: getWinner('r8_01',r8pairs[0].home,r8pairs[0].away)||'W 1/8-1', away: getWinner('r8_02',r8pairs[1].home,r8pairs[1].away)||'W 1/8-2'},
+    {id:'qf2', home: getWinner('r8_03',r8pairs[2].home,r8pairs[2].away)||'W 1/8-3', away: getWinner('r8_04',r8pairs[3].home,r8pairs[3].away)||'W 1/8-4'},
+    {id:'qf3', home: getWinner('r8_05',r8pairs[4].home,r8pairs[4].away)||'W 1/8-5', away: getWinner('r8_06',r8pairs[5].home,r8pairs[5].away)||'W 1/8-6'},
+    {id:'qf4', home: getWinner('r8_07',r8pairs[6].home,r8pairs[6].away)||'W 1/8-7', away: getWinner('r8_08',r8pairs[7].home,r8pairs[7].away)||'W 1/8-8'},
+  ];
+
+  const sfpairs = [
+    {id:'sf1', home: getWinner('qf1',qfpairs[0].home,qfpairs[0].away)||'W ćw-1', away: getWinner('qf2',qfpairs[1].home,qfpairs[1].away)||'W ćw-2'},
+    {id:'sf2', home: getWinner('qf3',qfpairs[2].home,qfpairs[2].away)||'W ćw-3', away: getWinner('qf4',qfpairs[3].home,qfpairs[3].away)||'W ćw-4'},
+  ];
+
+  const finalpair = {id:'final', home: getWinner('sf1',sfpairs[0].home,sfpairs[0].away)||'W półf-1', away: getWinner('sf2',sfpairs[1].home,sfpairs[1].away)||'W półf-2'};
+
+  const groupComplete = Object.keys(gPos).length >= 12 && Object.values(gPos).every(t => t.length >= 2 && t[0] !== '?');
+  const statusInfo = groupComplete
+    ? '<p style="font-size:12px;color:var(--green);margin-bottom:1rem;">✓ Pary obliczone automatycznie z tabeli grup</p>'
+    : '<p style="font-size:12px;color:var(--muted);margin-bottom:1rem;">⏳ Pary 1/16 pojawią się po zakończeniu fazy grupowej</p>';
+
+  const html = `
+    ${statusInfo}
+    <div class="bracket-wrap">
+      <div class="bracket-round">
+        <div class="bracket-round-title">1/16 finału</div>
+        <div class="bracket-matches">${buildRound(r16pairs)}</div>
+      </div>
+      <div style="width:2px;background:var(--border);align-self:stretch;margin-top:28px;"></div>
+      <div class="bracket-round">
+        <div class="bracket-round-title">1/8 finału</div>
+        <div class="bracket-matches">${buildRound(r8pairs)}</div>
+      </div>
+      <div style="width:2px;background:var(--border);align-self:stretch;margin-top:28px;"></div>
+      <div class="bracket-round">
+        <div class="bracket-round-title">Ćwierćfinały</div>
+        <div class="bracket-matches">${buildRound(qfpairs)}</div>
+      </div>
+      <div style="width:2px;background:var(--border);align-self:stretch;margin-top:28px;"></div>
+      <div class="bracket-round">
+        <div class="bracket-round-title">Półfinały</div>
+        <div class="bracket-matches">${buildRound(sfpairs)}</div>
+      </div>
+      <div style="width:2px;background:var(--border);align-self:stretch;margin-top:28px;"></div>
+      <div class="bracket-round">
+        <div class="bracket-round-title">Finał 🏆</div>
+        <div class="bracket-matches">${buildRound([finalpair])}</div>
+      </div>
+    </div>`;
+
+  document.getElementById('bracketContent').innerHTML = html;
 }
 
 // ── CZAT LIVE ────────────────────────────────────────────────
@@ -2242,11 +2374,9 @@ function renderCzat() {
     container.innerHTML = msgs.map(msg => {
       const mine = msg.nick === currentUser;
       const dn = msg.author || msg.nick || '?';
-      const av = getPlayerAvatar(msg.nick || '');
       const time = new Date(msg.ts).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
       return `<div class="chat-msg ${mine?'mine':''}">
-        ${!mine ? getAvatarEl(av.emoji, av.color, 28) : ''}
-        <div>
+          <div>
           <div class="chat-bubble">
             <div class="chat-bubble-author">${dn}</div>
             <div class="chat-bubble-text">${msg.text}</div>
@@ -2644,12 +2774,10 @@ window.stickyAction       = stickyAction;
 window.setStickyBar       = setStickyBar;
 window.resetAllResults    = resetAllResults;
 window.checkNewResults    = checkNewResults;
-window.resetPrediction   = resetPrediction;
 window.exportRanking     = exportRanking;
 window.togglePush        = togglePush;
 window.toggleThemeMenu   = toggleThemeMenu;
 window.setTheme          = setTheme;
-window.launchConfetti    = launchConfetti;
 window.handleLoginKey   = handleLoginKey;
 window.loginPlayer      = loginPlayer;
 window.loginAdmin       = loginAdmin;
