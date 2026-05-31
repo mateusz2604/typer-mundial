@@ -1271,34 +1271,32 @@ async function getState() {
 
 // ── Subskrypcje na żywo ────────────────────────────────────
 function subscribeFirebase() {
-  // Wspólne dane (wyniki, mecze, gracze) – słuchamy na żywo
   const paths = ['official', 'players', 'points', 'matches'];
   paths.forEach(path => {
     const r = ref(db, 'mundial2026/' + path);
     const fn = onValue(r, snap => {
       state[path] = snap.exists() ? snap.val() : (path === 'matches' ? null : {});
       if (path === 'matches' && !state.matches) state.matches = DEFAULT_MATCHES;
-      // Odśwież aktualny widok jeśli odpowiednia strona jest otwarta
       const active = document.querySelector('.page.active')?.id;
+      // Typowanie NIE rerenderuje – żeby nie zwijać akordeonów
       if (active === 'page-tabela')  renderTabela();
       if (active === 'page-ranking') renderRanking();
       if (active === 'page-moje')    renderMoje();
       if (active === 'page-wyniki' || active === 'page-admin') renderWyniki();
       if (active === 'page-mecze')   renderMecze();
       if (active === 'page-gracze')  renderGracze();
-      // Sprawdź nowe wyniki dla gracza
       if (path === 'official' && !isAdmin) checkNewResults();
     });
     fbListeners[path] = { r, fn };
   });
-  // Typowania gracza – tylko jego własne
+  // Typowania gracza – tylko aktualizuj dane, NIE rerenderuj strony typowania
   if (currentUser && currentUser !== '__admin__') {
     const r = ref(db, 'mundial2026/predictions/' + currentUser);
     const fn = onValue(r, snap => {
       state.predictions[currentUser] = snap.exists() ? snap.val() : {};
+      // Tylko Moje typy rerenderujemy – typowanie zostawiamy w spokoju
       const active = document.querySelector('.page.active')?.id;
-      if (active === 'page-typowanie') renderTypowanie();
-      if (active === 'page-moje')      renderMoje();
+      if (active === 'page-moje') renderMoje();
     });
     fbListeners['myPredictions'] = { r, fn };
   }
@@ -1541,7 +1539,7 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
           const days = Math.floor(diff/86400000);
           const hrs  = Math.floor((diff%86400000)/3600000);
           const mins = Math.floor((diff%3600000)/60000);
-          const soon = diff < 3600000; // < 1h
+          const soon = diff < 3600000;
           let cdStr = '';
           if (days > 0) cdStr = `${days}d ${hrs}h`;
           else if (hrs > 0) cdStr = `${hrs}h ${mins}m`;
