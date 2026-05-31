@@ -450,6 +450,10 @@ nav::-webkit-scrollbar { display: none; }
       <input type="password" id="passInput" placeholder="••••••••" onkeydown="handleLoginKey(event,'pass')"/>
     </div>
     <div class="error-msg" id="loginError"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+      <input type="checkbox" id="rememberMe" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);"/>
+      <label for="rememberMe" style="font-size:13px;color:var(--muted);cursor:pointer;">Zapamiętaj logowanie</label>
+    </div>
     <button class="btn" onclick="loginPlayer()">Wchodzę ⚽</button>
     <button class="btn secondary" onclick="showAdminLogin()">Zaloguj jako admin</button>
   </div>
@@ -1240,11 +1244,35 @@ const FIREBASE_CONFIG = {
 
 // Firebase SDK (compat – działa bez type="module")
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, update, remove, onValue, off }
+import { getDatabase, ref, get, set, update, remove, onValue, off, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const fbApp = initializeApp(FIREBASE_CONFIG);
 const db    = getDatabase(fbApp);
+
+// Czas serwerowy – synchronizowany z Firebase co 5 minut
+let serverTimeOffset = 0; // różnica między czasem serwera a lokalnym (ms)
+
+async function syncServerTime() {
+  try {
+    const t1 = Date.now();
+    await set(ref(db, 'mundial2026/.timecheck'), { ts: serverTimestamp() });
+    const snap = await get(ref(db, 'mundial2026/.timecheck'));
+    const t2 = Date.now();
+    if (snap.exists()) {
+      const serverTs = snap.val().ts;
+      const localMid = (t1 + t2) / 2;
+      serverTimeOffset = serverTs - localMid;
+    }
+  } catch(e) {}
+}
+
+function nowServer() {
+  return Date.now() + serverTimeOffset;
+}
+
+// Sync co 5 minut
+setInterval(syncServerTime, 5 * 60 * 1000);
 
 // Stan lokalny (cache) – wypełniany przez Firebase listeners
 let state = { players: {}, official: {}, predictions: {}, points: {}, matches: null };
@@ -1329,15 +1357,14 @@ function getMatches() { return state.matches || DEFAULT_MATCHES; }
 function isMatchLocked(m) {
   if (!m.date || !m.time) return false;
   try {
-    // date format: DD.MM, time: HH:MM
     const parts = m.date.split('.');
     const timeParts = m.time.split(':');
     const day = parseInt(parts[0]);
     const month = parseInt(parts[1]) - 1;
     const hour = parseInt(timeParts[0]);
     const min = parseInt(timeParts[1]) || 0;
-    const matchTime = new Date(2026, month, day, hour, min, 0);
-    return new Date() >= matchTime;
+    const matchTime = new Date(2026, month, day, hour, min, 0).getTime();
+    return nowServer() >= matchTime; // czas serwerowy – nie można oszukać zegarem
   } catch(e) { return false; }
 }
 
@@ -1408,15 +1435,22 @@ function getDisplayName(nick) {
 }
 
 function enterApp() {
-  // Zapisz sesję żeby przeżyła odświeżenie strony
-  sessionStorage.setItem('ms26_user', currentUser);
-  sessionStorage.setItem('ms26_admin', isAdmin ? '1' : '0');
+  const remember = document.getElementById('rememberMe')?.checked;
+  const storage = remember ? localStorage : sessionStorage;
+  storage.setItem('ms26_user', currentUser);
+  storage.setItem('ms26_admin', isAdmin ? '1' : '0');
+  if (remember) {
+    // Wyczyść sessionStorage żeby nie dublować
+    sessionStorage.removeItem('ms26_user');
+    sessionStorage.removeItem('ms26_admin');
+  }
 
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').classList.add('visible');
   subscribeFirebase();
   startCountdownTicker();
   initPush();
+  syncServerTime(); // synchronizuj czas z serwerem przy logowaniu
   if (isAdmin) {
     document.getElementById('userNameDisplay').textContent = 'Admin';
     document.getElementById('userAvatar').textContent = '⚡';
@@ -1448,6 +1482,8 @@ function logout() {
   state = { players: {}, official: {}, predictions: {}, points: {}, matches: null };
   sessionStorage.removeItem('ms26_user');
   sessionStorage.removeItem('ms26_admin');
+  localStorage.removeItem('ms26_user');
+  localStorage.removeItem('ms26_admin');
   currentUser=null; isAdmin=false;
   document.getElementById('appScreen').classList.remove('visible');
   document.getElementById('loginScreen').style.display='flex';
@@ -1535,7 +1571,7 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
       try {
         const parts = m.date.split('.'), tp = m.time.split(':');
         const matchTime = new Date(2026, parseInt(parts[1])-1, parseInt(parts[0]), parseInt(tp[0]), parseInt(tp[1]||0));
-        const diff = matchTime - new Date();
+        const diff = matchTime - nowServer();
         if (diff > 0) {
           const days = Math.floor(diff/86400000);
           const hrs  = Math.floor((diff%86400000)/3600000);
@@ -2786,8 +2822,9 @@ function recalcPoints() {
 
 // Auto-restore sesji po odświeżeniu strony
 (async () => {
-  const savedUser  = sessionStorage.getItem('ms26_user');
-  const savedAdmin = sessionStorage.getItem('ms26_admin') === '1';
+  // Sprawdź localStorage (zapamiętaj logowanie) a potem sessionStorage (tylko karta)
+  const savedUser  = localStorage.getItem('ms26_user') || sessionStorage.getItem('ms26_user');
+  const savedAdmin = (localStorage.getItem('ms26_admin') || sessionStorage.getItem('ms26_admin')) === '1';
   if (savedUser) {
     await getState();
     currentUser = savedUser;
@@ -2795,7 +2832,11 @@ function recalcPoints() {
     if (!isAdmin) {
       const p = state.players[savedUser];
       const status = typeof p === 'object' ? p?.status : p;
-      if (status !== 'approved') { sessionStorage.clear(); return; }
+      if (status !== 'approved') {
+        localStorage.removeItem('ms26_user'); localStorage.removeItem('ms26_admin');
+        sessionStorage.removeItem('ms26_user'); sessionStorage.removeItem('ms26_admin');
+        return;
+      }
     }
     enterApp();
   }
