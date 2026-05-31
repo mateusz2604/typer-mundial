@@ -20,6 +20,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Ignoruj chrome-extension i inne nie-http requesty
+  if (!e.request.url.startsWith('http')) return;
   // Firebase i zewnętrzne zasoby – zawsze sieć
   if (e.request.url.includes('firebase') || e.request.url.includes('googleapis.com/css')) {
     return;
