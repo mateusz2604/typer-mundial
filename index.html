@@ -684,6 +684,7 @@ nav::-webkit-scrollbar { display: none; }
   <!-- TYPOWANIE -->
   <div class="page active" id="page-typowanie">
     <p class="page-title">Twoje <span>typowania</span></p>
+    <div id="ms-countdown" style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem;text-align:center;"></div>
     <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;">Wpisz przewidywany wynik przed każdym meczem.</p>
     <div id="matchListTypowanie"></div>
   </div>
@@ -3159,7 +3160,45 @@ window.renderWyniki     = renderWyniki;
 window.renderMecze      = renderMecze;
 window.renderTabela     = renderTabela;
 
-// ── PWA Service Worker ───────────────────────────────────────
+function updateCountdown() {
+  const el = document.getElementById('ms-countdown');
+  if (!el) return;
+  const start = new Date('2026-06-11T21:00:00+02:00').getTime();
+  const end   = new Date('2026-07-19T23:59:59+02:00').getTime();
+  const now   = nowServer ? nowServer() : Date.now();
+
+  if (now >= end) {
+    el.style.display = 'none';
+    return;
+  }
+
+  if (now >= start) {
+    const day = Math.floor((now - start) / 86400000) + 1;
+    el.innerHTML = `<div style="font-size:13px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;">Mistrzostwa trwają!</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);">⚽ Dzień ${day}</div>`;
+    return;
+  }
+
+  const diff = start - now;
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  el.innerHTML = `
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">⚽ Do startu Mistrzostw Świata 2026</div>
+    <div style="display:flex;justify-content:center;gap:16px;align-items:flex-end;">
+      ${[['d',d],['h',h],['m',m],['s',s]].map(([l,v]) => `
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--green);line-height:1;">${String(v).padStart(2,'0')}</div>
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;">${l==='d'?'dni':l==='h'?'godz':l==='m'?'min':'sek'}</div>
+        </div>`).join('<div style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;color:var(--border);padding-bottom:14px;">:</div>')}
+    </div>`;
+}
+
+// Uruchom licznik
+updateCountdown();
+setInterval(updateCountdown, 1000);
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
     // Sprawdzaj aktualizacje co 60 sekund
