@@ -661,6 +661,10 @@ nav::-webkit-scrollbar { display: none; }
       <button class="logout-btn" onclick="logout()">Wyloguj</button>
     </div>
   </header>
+  <!-- Baner aktualizacji -->
+  <div id="updateBanner" style="display:none;background:var(--green);color:var(--btn-color,#000);text-align:center;padding:8px;font-size:13px;font-weight:600;cursor:pointer;" onclick="applyUpdate()">
+    🔄 Dostępna nowa wersja aplikacji – kliknij żeby zaktualizować!
+  </div>
   <nav>
     <button class="nav-btn active" onclick="showPage('typowanie',this)" id="nav-typowanie"><span class="emoji">✏️</span> Typowanie</button>
     <button class="nav-btn" onclick="showPage('moje',this)" id="nav-moje"><span class="emoji">📋</span> Moje typy</button>
@@ -3157,8 +3161,45 @@ window.renderTabela     = renderTabela;
 
 // ── PWA Service Worker ───────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // Sprawdzaj aktualizacje co 60 sekund
+    setInterval(() => reg.update(), 60000);
+
+    // Wykryj nową wersję SW
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          // Jest nowa wersja – pokaż baner
+          document.getElementById('updateBanner').style.display = 'block';
+        }
+      });
+    });
+  }).catch(() => {});
+
+  // Gdy nowy SW przejmuje kontrolę – przeładuj stronę
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) { refreshing = true; window.location.reload(); }
+  });
 }
+
+function applyUpdate() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(reg => {
+      if (reg.waiting) {
+        reg.waiting.postMessage('SKIP_WAITING');
+      } else {
+        // Wyczyść cache i przeładuj
+        caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
+          .then(() => window.location.reload(true));
+      }
+    });
+  } else {
+    window.location.reload(true);
+  }
+}
+window.applyUpdate = applyUpdate;
 </script>
 </body>
 </html>
