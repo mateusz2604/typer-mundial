@@ -783,7 +783,17 @@ nav::-webkit-scrollbar { display: none; }
     <div class="section-label" style="margin-top:1.5rem;">Zatwierdzeni gracze</div>
     <div id="approvedPlayersList"></div>
 
-    <div style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+    <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">📦 Wersja aplikacji</div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input id="versionInput" type="text" placeholder="np. v1.0" maxlength="20"
+          style="flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"/>
+        <button onclick="saveVersion()" style="background:var(--green);border:none;border-radius:8px;color:var(--btn-color,#000);padding:10px 18px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600;white-space:nowrap;">Zapisz</button>
+      </div>
+      <p id="currentVersion" style="font-size:12px;color:var(--muted);margin-top:8px;"></p>
+    </div>
+
+    <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
       <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">⚠️ Strefa niebezpieczna</div>
       <button onclick="resetFullFirebase()" style="width:100%;padding:12px;background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);color:var(--red);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">
         🗑️ Pełny reset – usuń wszystkich graczy, typy, wyniki i czat
@@ -809,6 +819,11 @@ nav::-webkit-scrollbar { display: none; }
 </div>
 
 <div class="toast" id="toast"></div>
+<div style="text-align:center;padding:12px 16px;font-size:11px;color:var(--muted);border-top:0.5px solid var(--border);margin-top:2rem;">
+  <span id="appVersion"></span>
+  <span id="appVersion" style="display:none;"> · </span>
+  Ostatnia aktualizacja: <span id="buildDate">__BUILD_DATE__</span>
+</div>
 <div class="result-notify" id="resultNotify">
   <button class="result-notify-close" onclick="document.getElementById('resultNotify').classList.remove('show')">×</button>
   <div class="result-notify-title">🔔 Nowe wyniki!</div>
@@ -1538,12 +1553,13 @@ async function getState() {
 
 // ── Subskrypcje na żywo ────────────────────────────────────
 function subscribeFirebase() {
-  const paths = ['official', 'players', 'points', 'matches'];
+  const paths = ['official', 'players', 'points', 'matches', 'version'];
   paths.forEach(path => {
     const r = ref(db, 'mundial2026/' + path);
     const fn = onValue(r, snap => {
-      state[path] = snap.exists() ? snap.val() : (path === 'matches' ? null : {});
+      state[path] = snap.exists() ? snap.val() : (path === 'matches' ? null : (path === 'version' ? '' : {}));
       if (path === 'matches' && !state.matches) state.matches = DEFAULT_MATCHES;
+      if (path === 'version') updateVersionDisplay();
       const active = document.querySelector('.page.active')?.id;
       // Typowanie NIE rerenderuje – żeby nie zwijać akordeonów
       if (active === 'page-tabela')  renderTabela();
@@ -2979,6 +2995,33 @@ function checkNewResults() {
     setTimeout(() => document.getElementById('resultNotify').classList.remove('show'), 8000);
   }
 }
+
+async function saveVersion() {
+  const inp = document.getElementById('versionInput');
+  const v = inp?.value.trim();
+  if (!v) return;
+  await fbSet('version', v);
+  state.version = v;
+  updateVersionDisplay();
+  showToast(`✓ Wersja zapisana: ${v}`);
+}
+
+function updateVersionDisplay() {
+  const v = state.version || '';
+  // Stopka – wersja
+  const footer = document.getElementById('appVersion');
+  if (footer) {
+    footer.textContent = v || '';
+    footer.nextElementSibling.style.display = v ? 'inline' : 'none';
+  }
+  // Panel admina
+  const cur = document.getElementById('currentVersion');
+  if (cur) cur.textContent = v ? `Aktualna wersja: ${v}` : 'Brak wersji';
+  const inp = document.getElementById('versionInput');
+  if (inp && v) inp.placeholder = v;
+}
+
+window.saveVersion = saveVersion;
 
 async function resetAllResults() {
   if (!confirm('Czy na pewno chcesz usunąć WSZYSTKIE wyniki i punkty?\nTypowania graczy zostaną zachowane.')) return;
