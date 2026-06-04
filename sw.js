@@ -16,8 +16,9 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Ignoruj nie-http requesty
+  // Ignoruj nie-http requesty i metody inne niż GET
   if (!e.request.url.startsWith('http')) return;
+  if (e.request.method !== 'GET') return;
 
   // Firebase, googleapis – zawsze sieć, nigdy cache
   if (
