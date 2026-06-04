@@ -784,16 +784,6 @@ nav::-webkit-scrollbar { display: none; }
     <div id="approvedPlayersList"></div>
 
     <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
-      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">📦 Wersja aplikacji</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input id="versionInput" type="text" placeholder="np. v1.0" maxlength="20"
-          style="flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;"/>
-        <button onclick="saveVersion()" style="background:var(--green);border:none;border-radius:8px;color:var(--btn-color,#000);padding:10px 18px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:600;white-space:nowrap;">Zapisz</button>
-      </div>
-      <p id="currentVersion" style="font-size:12px;color:var(--muted);margin-top:8px;"></p>
-    </div>
-
-    <div style="margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border);">
       <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">⚠️ Strefa niebezpieczna</div>
       <button onclick="resetFullFirebase()" style="width:100%;padding:12px;background:rgba(229,57,53,0.1);border:1px solid rgba(229,57,53,0.3);color:var(--red);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">
         🗑️ Pełny reset – usuń wszystkich graczy, typy, wyniki i czat
@@ -1551,7 +1541,7 @@ async function getState() {
 
 // ── Subskrypcje na żywo ────────────────────────────────────
 function subscribeFirebase() {
-  const paths = ['official', 'players', 'points', 'matches', 'version'];
+  const paths = ['official', 'players', 'points', 'matches'];
   paths.forEach(path => {
     const r = ref(db, 'mundial2026/' + path);
     const fn = onValue(r, snap => {
@@ -1736,9 +1726,8 @@ function logout() {
   sessionStorage.removeItem('ms26_admin');
   localStorage.removeItem('ms26_user');
   localStorage.removeItem('ms26_admin');
-  // Ukryj sticky pasek
-  document.getElementById('stickySave')?.classList.remove('visible');
   currentUser=null; isAdmin=false;
+  document.getElementById('stickySave')?.classList.remove('visible');
   document.getElementById('appScreen').classList.remove('visible');
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('nickInput').value='';
@@ -1748,7 +1737,11 @@ function logout() {
   document.getElementById('nav-typowanie').style.display='';
   document.getElementById('nav-moje').style.display='';
   document.querySelectorAll('.admin-only').forEach(el => el.style.display='none');
-  showPage('typowanie', document.getElementById('nav-typowanie'));
+  // Resetuj nawigację bez wywoływania setStickyBar
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-typowanie')?.classList.add('active');
+  // Ukryj sticky ponownie po showPage
+  setTimeout(() => document.getElementById('stickySave')?.classList.remove('visible'), 50);
 }
 
 let currentStickyAction = null;
@@ -3024,20 +3017,21 @@ async function saveVersion() {
 }
 
 function updateVersionDisplay() {
-  const v = state.version || '';
-  // Stopka – wersja
-  const footer = document.getElementById('appVersion');
-  if (footer) {
-    footer.textContent = v || '';
-    const sep = document.getElementById('appVersionSep');
-    if (sep) sep.style.display = v ? 'inline' : 'none';
-  }
+  const vEl = document.getElementById('appVersion');
+  const sep = document.getElementById('appVersionSep');
+  const dateEl = document.getElementById('buildDate');
+  if (vEl) vEl.textContent = BUILD_VERSION;
+  if (sep) sep.style.display = 'inline';
+  if (dateEl) dateEl.textContent = BUILD_DATE;
   // Panel admina
   const cur = document.getElementById('currentVersion');
-  if (cur) cur.textContent = v ? `Aktualna wersja: ${v}` : 'Brak wersji';
+  if (cur) cur.textContent = `Aktualna wersja: ${BUILD_VERSION} · ${BUILD_DATE}`;
   const inp = document.getElementById('versionInput');
-  if (inp && v) inp.placeholder = v;
+  if (inp) inp.placeholder = BUILD_VERSION;
 }
+
+// Inicjuj stopkę od razu
+updateVersionDisplay();
 
 window.saveVersion = saveVersion;
 
@@ -3261,42 +3255,9 @@ function updateCountdown() {
 updateCountdown();
 setInterval(updateCountdown, 1000);
 
-// Data ostatniej aktualizacji z nagłówka HTTP
-fetch('/index.html', {method:'HEAD'}).then(r => {
-  const lm = r.headers.get('last-modified');
-  const el = document.getElementById('buildDate');
-  if (el && lm) {
-    el.textContent = new Date(lm).toLocaleString('pl-PL', {
-      day:'2-digit', month:'long', year:'numeric',
-      hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
-    });
-  } else if (el) {
-    el.textContent = new Date().toLocaleString('pl-PL', {
-      day:'2-digit', month:'long', year:'numeric',
-      hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
-    });
-  }
-}).catch(() => {
-  const el = document.getElementById('buildDate');
-  if (el) el.textContent = new Date().toLocaleString('pl-PL', {
-    day:'2-digit', month:'long', year:'numeric',
-    hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
-  });
-});
-
-// Pokaż wersję z Firebase na stronie logowania
-(async () => {
-  try {
-    const snap = await get(ref(db, 'mundial2026/version'));
-    if (snap.exists()) {
-      const v = snap.val();
-      const el = document.getElementById('appVersion');
-      const sep = document.getElementById('appVersionSep');
-      if (el) el.textContent = v;
-      if (sep) sep.style.display = 'inline';
-    }
-  } catch(e) {}
-})();
+// Wersja i data buildu – aktualizowane przy każdej zmianie
+const BUILD_VERSION = 'v0.53';
+const BUILD_DATE = '4 czerwca 2026, 23:00';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
