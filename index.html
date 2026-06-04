@@ -676,7 +676,7 @@ nav::-webkit-scrollbar { display: none; }
     <button class="nav-btn" onclick="showPage('live',this)"><span class="emoji">🔴</span> Live</button>
     <button class="nav-btn" onclick="showPage('czat',this)"><span class="emoji">💬</span> Czat</button>
     <button class="nav-btn" onclick="porownajWith=null;showPage('porownaj',this)"><span class="emoji">⚔️</span> Porównaj</button>
-    <button class="nav-btn admin-only" onclick="showPage('gracze',this)" style="display:none;" id="nav-gracze"><span class="emoji">👥</span> Gracze</button>
+    <button class="nav-btn admin-only" onclick="showPage('gracze',this)" style="display:none;" id="nav-gracze"><span class="emoji">👥</span> Gracze<span id="gracze-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;line-height:1.6;"></span></button>
     <button class="nav-btn admin-only" onclick="showPage('mecze',this)" style="display:none;" id="nav-mecze"><span class="emoji">📅</span> Mecze</button>
     <button class="nav-btn admin-only" onclick="showPage('admin',this)" style="display:none;" id="nav-admin"><span class="emoji">⚡</span> Wyniki</button>
   </nav>
@@ -778,7 +778,7 @@ nav::-webkit-scrollbar { display: none; }
   <div class="page" id="page-gracze">
     <p class="page-title">👥 <span>Gracze</span></p>
     <div class="admin-banner">Zarządzaj graczami – zatwierdzaj wnioski i edytuj wyświetlane nazwy</div>
-    <div class="section-label">Oczekujące zatwierdzenia</div>
+    <div class="section-label" id="pendingSectionLabel">Oczekujące zatwierdzenia</div>
     <div id="pendingPlayersList"></div>
     <div class="section-label" style="margin-top:1.5rem;">Zatwierdzeni gracze</div>
     <div id="approvedPlayersList"></div>
@@ -2870,14 +2870,31 @@ function renderGracze() {
   const pending = Object.keys(state.players).filter(nick => {
     const p=state.players[nick]; return typeof p==='object'?p.status==='pending':p==='pending';
   });
+
+  // OPCJA 5 – badge przy zakładce Gracze w nav
+  const navBadge = document.getElementById('gracze-badge');
+  if (navBadge) {
+    navBadge.textContent = pending.length || '';
+    navBadge.style.display = pending.length ? 'inline-flex' : 'none';
+  }
+
+  // OPCJA 2 – badge z liczbą przy tytule sekcji
+  const secLabel = document.getElementById('pendingSectionLabel');
+  if (secLabel) {
+    secLabel.innerHTML = `OCZEKUJĄCE ZATWIERDZENIA
+      ${pending.length ? `<span style="background:rgba(229,57,53,0.15);color:var(--red);font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;margin-left:8px;">${pending.length}</span>` : ''}`;
+  }
+
+  // OPCJA 4 – karta z pomarańczową krawędzią
   document.getElementById('pendingPlayersList').innerHTML = pending.length ? pending.map(nick => `
-    <div class="player-item">
+    <div style="background:rgba(251,191,36,0.06);border:0.5px solid rgba(251,191,36,0.25);border-left:3px solid #f59e0b;border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
       <div><div style="font-size:14px;font-weight:500;">${nick}</div><div style="font-size:11px;color:var(--muted);">czeka na zatwierdzenie</div></div>
       <div class="player-actions">
         <button class="btn sm approve" onclick="approvePlayer('${nick}')">Zatwierdź</button>
         <button class="btn sm danger" onclick="removePlayer('${nick}')">Usuń</button>
       </div>
     </div>`).join('') : '<p style="color:var(--muted);font-size:13px;padding:8px 0;">Brak wniosków do rozpatrzenia.</p>';
+
   document.getElementById('approvedPlayersList').innerHTML = approved.length ? approved.map(nick => {
     const dn=getDisplayName(nick);
     return `<div class="player-item">
