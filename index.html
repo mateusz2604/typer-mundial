@@ -819,7 +819,7 @@ nav::-webkit-scrollbar { display: none; }
 </div>
 
 <div class="toast" id="toast"></div>
-<div style="text-align:center;padding:12px 16px;font-size:11px;color:var(--muted);border-top:0.5px solid var(--border);margin-top:2rem;">
+<div style="text-align:center;padding:6px 16px;font-size:11px;color:var(--muted);position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border);z-index:97;pointer-events:none;">
   <span id="appVersion"></span><span id="appVersionSep" style="display:none;"> · </span>Ostatnia aktualizacja: <span id="buildDate">ładowanie...</span>
 </div>
 <div class="result-notify" id="resultNotify">
@@ -1736,6 +1736,8 @@ function logout() {
   sessionStorage.removeItem('ms26_admin');
   localStorage.removeItem('ms26_user');
   localStorage.removeItem('ms26_admin');
+  // Ukryj sticky pasek
+  document.getElementById('stickySave')?.classList.remove('visible');
   currentUser=null; isAdmin=false;
   document.getElementById('appScreen').classList.remove('visible');
   document.getElementById('loginScreen').style.display='flex';
@@ -3252,12 +3254,32 @@ fetch('/index.html', {method:'HEAD'}).then(r => {
       hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
     });
   } else if (el) {
-    el.textContent = new Date().toLocaleDateString('pl-PL',{day:'2-digit',month:'long',year:'numeric'});
+    el.textContent = new Date().toLocaleString('pl-PL', {
+      day:'2-digit', month:'long', year:'numeric',
+      hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
+    });
   }
 }).catch(() => {
   const el = document.getElementById('buildDate');
-  if (el) el.textContent = new Date().toLocaleDateString('pl-PL',{day:'2-digit',month:'long',year:'numeric'});
+  if (el) el.textContent = new Date().toLocaleString('pl-PL', {
+    day:'2-digit', month:'long', year:'numeric',
+    hour:'2-digit', minute:'2-digit', timeZone:'Europe/Warsaw'
+  });
 });
+
+// Pokaż wersję z Firebase na stronie logowania
+(async () => {
+  try {
+    const snap = await get(ref(db, 'mundial2026/version'));
+    if (snap.exists()) {
+      const v = snap.val();
+      const el = document.getElementById('appVersion');
+      const sep = document.getElementById('appVersionSep');
+      if (el) el.textContent = v;
+      if (sep) sep.style.display = 'inline';
+    }
+  } catch(e) {}
+})();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
