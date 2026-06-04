@@ -3023,15 +3023,11 @@ function updateVersionDisplay() {
   if (vEl) vEl.textContent = BUILD_VERSION;
   if (sep) sep.style.display = 'inline';
   if (dateEl) dateEl.textContent = BUILD_DATE;
-  // Panel admina
   const cur = document.getElementById('currentVersion');
   if (cur) cur.textContent = `Aktualna wersja: ${BUILD_VERSION} · ${BUILD_DATE}`;
   const inp = document.getElementById('versionInput');
   if (inp) inp.placeholder = BUILD_VERSION;
 }
-
-// Inicjuj stopkę od razu
-updateVersionDisplay();
 
 window.saveVersion = saveVersion;
 
@@ -3256,7 +3252,7 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v0.53';
+const BUILD_VERSION = 'v0.54';
 const BUILD_DATE = '4 czerwca 2026, 23:00';
 
 if ('serviceWorker' in navigator) {
@@ -3299,6 +3295,9 @@ function applyUpdate() {
   }
 }
 window.applyUpdate = applyUpdate;
+
+// Inicjuj stopkę po załadowaniu wszystkich deklaracji
+updateVersionDisplay();
 </script>
 </body>
 </html>
