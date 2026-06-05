@@ -735,8 +735,10 @@ nav::-webkit-scrollbar { display: none; }
   <div class="page" id="page-statystyki">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
       <p class="page-title" style="margin:0;">📊 <span>Statystyki</span></p>
-      <button class="btn sm secondary" onclick="showGantt()" style="font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0;padding:8px 14px;width:auto;margin:0;">📈 Diagram Gantta</button>
-      <button class="btn sm secondary" onclick="showMeczPoMeczu()" style="font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0;padding:8px 14px;width:auto;margin:0;">⚽ Mecz po meczu</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn sm secondary" onclick="showGantt()" style="font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0;padding:8px 14px;width:auto;margin:0;border:1px solid var(--green);color:var(--green);">📈 Diagram Gantta</button>
+        <button class="btn sm secondary" onclick="showMeczPoMeczu()" style="font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0;padding:8px 14px;width:auto;margin:0;border:1px solid var(--green);color:var(--green);">⚽ Mecz po meczu</button>
+      </div>
     </div>
     <div id="statsContent"></div>
   </div>
@@ -744,20 +746,20 @@ nav::-webkit-scrollbar { display: none; }
   <!-- MODAL MECZ PO MECZU -->
   <div id="mpmModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;overflow:auto;padding:1rem;" onclick="if(event.target===this)closeMPM()">
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;max-width:98vw;margin:2rem auto;padding:1.5rem;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:0.06em;">⚽ <span style="color:var(--green);">Mecz po meczu</span></div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-          <select id="mpmPhaseFilter" onchange="renderMPM()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;">
-            <option value="group">Faza grupowa</option>
-            <option value="r16">1/16 finału</option>
-            <option value="r8">1/8 finału</option>
-            <option value="qf">Ćwierćfinały</option>
-            <option value="sf">Półfinały</option>
-            <option value="final">Finał / 3. miejsce</option>
-            <option value="all">Wszystkie</option>
-          </select>
-          <button onclick="closeMPM()" style="background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;">×</button>
-        </div>
+        <button onclick="closeMPM()" style="background:none;border:none;color:var(--muted);font-size:28px;cursor:pointer;line-height:1;padding:4px 8px;">×</button>
+      </div>
+      <div style="margin-bottom:1rem;">
+        <select id="mpmPhaseFilter" onchange="renderMPM()" style="background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;width:100%;max-width:220px;">
+          <option value="group">Faza grupowa</option>
+          <option value="r16">1/16 finału</option>
+          <option value="r8">1/8 finału</option>
+          <option value="qf">Ćwierćfinały</option>
+          <option value="sf">Półfinały</option>
+          <option value="final">Finał / 3. miejsce</option>
+          <option value="all">Wszystkie</option>
+        </select>
       </div>
       <div style="display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
         <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);"><div style="width:12px;height:12px;border-radius:3px;background:rgba(0,200,83,0.25);border:1px solid var(--green);"></div>+3 dokładny</div>
@@ -3678,8 +3680,8 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v0.57';
-const BUILD_DATE = '5 czerwca 2026, 14:30';
+const BUILD_VERSION = 'v0.58';
+const BUILD_DATE = '5 czerwca 2026, 14:42';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
