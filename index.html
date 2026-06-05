@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Typer MŚ"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="icon" type="image/png" href="icon-192.png"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <link rel="manifest" href="manifest.json"/>
@@ -196,23 +197,18 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 header {
   background: var(--header-bg);
   border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem;
+  padding: 0 1rem;
   display: flex; align-items: center; justify-content: space-between;
   height: 58px; position: sticky; top: 0; z-index: 100;
   backdrop-filter: blur(8px);
 }
-.header-logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; }
+.header-logo { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.08em; line-height: 1; }
 .header-logo span { color: var(--green); }
-.header-user { display: flex; align-items: center; gap: 10px; }
-.avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: var(--green-dark);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: #fff;
-  border: 2px solid rgba(255,255,255,0.1);
-}
-.logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 12px; cursor: pointer; border-radius: 6px; padding: 4px 10px; transition: all 0.15s; }
+.header-user { display: flex; align-items: center; gap: 8px; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green-dark); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: #fff; border: 2px solid rgba(255,255,255,0.1); flex-shrink: 0; }
+.logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); font-size: 12px; cursor: pointer; border-radius: 6px; padding: 4px 10px; transition: all 0.15s; white-space: nowrap; }
 .logout-btn:hover { color: var(--text); border-color: var(--text); }
+#userNameDisplay { font-size: 14px; font-weight: 500; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* NAV */
 nav {
@@ -221,7 +217,7 @@ nav {
   background: var(--nav-bg);
   overflow-x: auto; scrollbar-width: none;
   position: sticky; top: 58px; z-index: 99;
-  padding: 0 0.5rem;
+  padding: 0 0.25rem;
   gap: 0;
 }
 nav::-webkit-scrollbar { display: none; }
@@ -1752,6 +1748,7 @@ function enterApp() {
   } else {
     document.getElementById('userNameDisplay').textContent = currentUser;
     document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+    setStickyBar('Zapisz typowania ⚽', saveAllPredictions);
     renderTypowanie();
     // Sprawdź profil po załadowaniu danych z Firebase (krótkie opóźnienie)
     setTimeout(() => {
@@ -1882,7 +1879,7 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
           if (days > 0) cdStr = `${days}d ${hrs}h`;
           else if (hrs > 0) cdStr = `${hrs}h ${mins}m`;
           else cdStr = `${mins} min`;
-          countdown = `<div class="countdown${soon?' soon':''}">⏱️ za ${cdStr}</div>`;
+          countdown = `<div class="countdown${soon?' soon':''} match-countdown" data-match-id="${m.id}">⏱️ za ${cdStr}</div>`;
         }
       } catch(e) {}
       timeBadge = `<span class="badge" style="background:rgba(255,255,255,0.05);color:var(--muted);">⏰ ${m.time}</span>`;
@@ -1915,6 +1912,29 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
     <div class="flag-left" style="background:${hCol[0]};"></div>
     <div class="flag-right" style="background:${aCol[0]};"></div>
   </div>`;
+  const inputPrefix = forceUnlock ? 'off_' : '';
+  const isKnockout = ['r16','r8','qf','sf','final','p3'].includes(m.phase);
+  const offData = state.official?.[m.id] || {};
+  const isRemis = forceUnlock && offData.h !== '' && offData.a !== '' && parseInt(offData.h) === parseInt(offData.a);
+  const penH = offData.penH ?? '';
+  const penA = offData.penA ?? '';
+  const penWinner = penH !== '' && penA !== '' ? (parseInt(penH) > parseInt(penA) ? m.home : parseInt(penA) > parseInt(penH) ? m.away : '') : '';
+
+  const penSection = forceUnlock && isKnockout ? `
+    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;margin-bottom:6px;" id="pen_wrap_${m.id}">
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">karne (jeśli remis)</div>
+      <div style="display:flex;gap:4px;align-items:center;">
+        <input type="number" min="0" max="20" id="off_${m.id}_penh" value="${penH}" placeholder="–"
+          style="width:30px;height:28px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;outline:none;"
+          oninput="this.value=this.value.slice(0,2);updatePenWinner('${m.id}')"/>
+        <span style="font-size:12px;color:var(--muted);">:</span>
+        <input type="number" min="0" max="20" id="off_${m.id}_pena" value="${penA}" placeholder="–"
+          style="width:30px;height:28px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;text-align:center;outline:none;"
+          oninput="this.value=this.value.slice(0,2);updatePenWinner('${m.id}')"/>
+      </div>
+      <div id="pen_winner_${m.id}" style="font-size:11px;color:var(--green);min-height:16px;">${penWinner ? `→ ${penWinner} awansuje` : ''}</div>
+    </div>` : '';
+
   return `<div class="match-card" style="${locked&&!disabled&&!forceUnlock?'opacity:0.85;':''}">
     ${flagBg}
     <div class="match-meta">
@@ -1926,17 +1946,18 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
     <div class="match-teams">
       <div class="team-home"><span style="font-size:22px">${hFlag}</span><span class="team-name">${m.home}</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        ${penSection}
         <div class="score-box">
-          <input class="score-inp" type="number" min="0" max="99" maxlength="2" id="${m.id}_h" value="${homeVal}" placeholder="?" ${isDisabled?'disabled':''} oninput="this.value=this.value.slice(0,2)"/>
+          <input class="score-inp" type="number" min="0" max="99" maxlength="2" id="${inputPrefix}${m.id}_h" value="${homeVal}" placeholder="?" ${isDisabled?'disabled':''} oninput="this.value=this.value.slice(0,2);${forceUnlock&&isKnockout?`updatePenWinner('${m.id}')`:''}" />
           <span class="score-sep">:</span>
-          <input class="score-inp" type="number" min="0" max="99" maxlength="2" id="${m.id}_a" value="${awayVal}" placeholder="?" ${isDisabled?'disabled':''} oninput="this.value=this.value.slice(0,2)"/>
+          <input class="score-inp" type="number" min="0" max="99" maxlength="2" id="${inputPrefix}${m.id}_a" value="${awayVal}" placeholder="?" ${isDisabled?'disabled':''} oninput="this.value=this.value.slice(0,2);${forceUnlock&&isKnockout?`updatePenWinner('${m.id}')`:''}" />
         </div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">${forceUnlock&&isKnockout?'90 min':''}</div>
         ${officialScoreRow}
       </div>
       <div class="team-away"><span style="font-size:22px">${aFlag}</span><span class="team-name">${m.away}</span></div>
     </div>
     ${resultBadge?`<div style="margin-top:8px;">${resultBadge}</div>`:''}
-
   </div>`;
 }
 
@@ -1951,12 +1972,23 @@ const PHASE_MAP = {
 };
 
 // Grupuje mecze w kolejki wg fazy
+function sortByDate(matches) {
+  return [...matches].sort((a, b) => {
+    const toMs = m => {
+      const [d, mo] = (m.date||'01.01').split('.');
+      const [h, min] = (m.time||'00:00').split(':');
+      return new Date(2026, parseInt(mo)-1, parseInt(d), parseInt(h), parseInt(min||0)).getTime();
+    };
+    return toMs(a) - toMs(b);
+  });
+}
+
 function getRounds(matches, phase) {
   if (phase === 'group') {
-    const r1 = matches.filter(m => m.id.match(/g[A-L]([12])$/));
-    const r2 = matches.filter(m => m.id.match(/g[A-L]([34])$/));
-    const r3 = matches.filter(m => m.id.match(/g[A-L]([56])$/));
-    const rest = matches.filter(m => !m.id.match(/g[A-L][1-6]$/));
+    const r1 = sortByDate(matches.filter(m => m.id.match(/g[A-L]([12])$/)));
+    const r2 = sortByDate(matches.filter(m => m.id.match(/g[A-L]([34])$/)));
+    const r3 = sortByDate(matches.filter(m => m.id.match(/g[A-L]([56])$/)));
+    const rest = sortByDate(matches.filter(m => !m.id.match(/g[A-L][1-6]$/)));
     const rounds = [];
     if (r1.length) rounds.push({title:'I kolejka',  subtitle:'Mecze I kolejki',  matches: r1});
     if (r2.length) rounds.push({title:'II kolejka', subtitle:'Mecze II kolejki', matches: r2});
@@ -1964,10 +1996,10 @@ function getRounds(matches, phase) {
     if (rest.length) rounds.push({title:'Pozostałe', subtitle:'', matches: rest});
     return rounds;
   }
-  if (phase === 'r16') return [{title:'1/16 finału',   subtitle:'', matches}];
-  if (phase === 'r8')  return [{title:'1/8 finału',    subtitle:'', matches}];
-  if (phase === 'qf')  return [{title:'Ćwierćfinały',  subtitle:'', matches}];
-  if (phase === 'sf')  return [{title:'Półfinały',      subtitle:'', matches}];
+  if (phase === 'r16') return [{title:'1/16 finału',   subtitle:'', matches: sortByDate(matches)}];
+  if (phase === 'r8')  return [{title:'1/8 finału',    subtitle:'', matches: sortByDate(matches)}];
+  if (phase === 'qf')  return [{title:'Ćwierćfinały',  subtitle:'', matches: sortByDate(matches)}];
+  if (phase === 'sf')  return [{title:'Półfinały',      subtitle:'', matches: sortByDate(matches)}];
   if (phase === 'final') {
     const p3  = matches.filter(m => m.phase==='p3');
     const fin = matches.filter(m => m.phase==='final');
@@ -1976,7 +2008,7 @@ function getRounds(matches, phase) {
     if (fin.length) rounds.push({title:'Finał 🏆',          subtitle:'', matches: fin});
     return rounds;
   }
-  return [{title:'Mecze', subtitle:'', matches}];
+  return [{title:'Mecze', subtitle:'', matches: sortByDate(matches)}];
 }
 
 function toggleRound(el) {
@@ -2165,18 +2197,48 @@ function renderTabela() {
     return;
   }
 
-  function sortTeams(teams) {
-    return teams.sort((a,b) => {
+  function sortTeams(teams, groupMatches) {
+    // Oblicz wyniki bezpośrednich meczów (h2h) między drużynami
+    function h2h(teamA, teamB) {
+      let pktA=0, pktB=0, brA=0, brB=0, bfA=0, bfB=0;
+      groupMatches.forEach(m => {
+        const off = official[m.id];
+        if (!off || off.h==='' || off.a==='') return;
+        const h=parseInt(off.h), a=parseInt(off.a);
+        if (m.home===teamA && m.away===teamB) {
+          bfA+=h; bfB+=a; brA+=h-a; brB+=a-h;
+          if (h>a){pktA+=3;}else if(h<a){pktB+=3;}else{pktA++;pktB++;}
+        } else if (m.home===teamB && m.away===teamA) {
+          bfB+=h; bfA+=a; brB+=h-a; brA+=a-h;
+          if (h>a){pktB+=3;}else if(h<a){pktA+=3;}else{pktA++;pktB++;}
+        }
+      });
+      return {pktA, pktB, brA, brB, bfA, bfB};
+    }
+
+    return teams.sort((a, b) => {
+      // 1. Punkty
       if (b.pkt !== a.pkt) return b.pkt - a.pkt;
-      const bBr = b.bf - b.bc, aBr = a.bf - a.bc;
+      // 2. Bilans bramkowy ogólny
+      const bBr = b.bf-b.bc, aBr = a.bf-a.bc;
       if (bBr !== aBr) return bBr - aBr;
-      return b.bf - a.bf;
+      // 3. Bramki strzelone ogólnie
+      if (b.bf !== a.bf) return b.bf - a.bf;
+      // 4. Wyniki bezpośrednich meczów
+      const r = h2h(a.team, b.team);
+      if (r.pktA !== r.pktB) return r.pktB - r.pktA; // więcej pkt w h2h = wyżej
+      if (r.brA !== r.brB) return r.brB - r.brA;     // lepszy bilans w h2h
+      if (r.bfA !== r.bfB) return r.bfB - r.bfA;     // więcej bramek w h2h
+      return 0; // losowanie FIFA – zostawiamy jak jest
     });
   }
 
+  const groupMatches = matches.filter(m => m.phase === 'group' && /^[A-L]$/.test(m.group));
+
   // Tabele grup A–L
   const groupTablesHtml = sortedGroups.map(g => {
-    const teams = sortTeams(Object.values(groups[g]));
+    const gMatches = groupMatches.filter(m => m.group === g);
+    const teams = sortTeams(Object.values(groups[g]), gMatches);
     const rows = teams.map((t, i) => {
       const flag = teamFlag(t.team);
       const br = (t.bf - t.bc >= 0 ? '+' : '') + (t.bf - t.bc);
@@ -2184,7 +2246,7 @@ function renderTabela() {
       const third = i === 2;
       return `<tr class="${promoted ? 'promoted' : third ? 'third' : ''}">
         <td><div class="group-team-name">
-          ${promoted ? '<span class="adv-badge"></span>' : third ? '<span style="width:10px;height:10px;border-radius:50%;background:rgba(100,160,255,0.7);display:inline-block;margin-right:4px;flex-shrink:0;"></span>' : '<span style="width:10px;display:inline-block"></span>'}
+          ${promoted ? '<span class="adv-badge"></span>' : third ? '<span style="width:7px;height:7px;border-radius:50%;background:rgba(100,160,255,0.7);display:inline-block;flex-shrink:0;"></span>' : '<span style="width:7px;display:inline-block"></span>'}
           <span style="font-size:18px">${flag}</span>${t.team}
         </div></td>
         <td class="group-num">${t.m}</td>
@@ -2281,18 +2343,19 @@ function renderMPM() {
 
   const allMatches = getMatches();
   let matches = phase === 'all' ? allMatches :
-    phase === 'final' ? allMatches.filter(m=>m.phase==='final'||m.phase==='third') :
+    phase === 'final' ? allMatches.filter(m=>m.phase==='final'||m.phase==='third'||m.phase==='p3') :
     allMatches.filter(m=>m.phase===phase);
 
-  // Tylko mecze z oficjalnym wynikiem LUB wpisanymi typami
-  const relevant = matches.filter(m => {
-    const off = state.official[m.id];
-    const hasOff = off && off.h!=='' && off.a!=='';
-    const hasPred = approved.some(n => {
-      const p = state.predictions[n]?.[m.id];
-      return p && p.h!=='' && p.a!=='';
-    });
-    return hasOff || hasPred;
+  // Posortuj chronologicznie po dacie i godzinie
+  const relevant = [...matches].sort((a, b) => {
+    try {
+      const toMs = m => {
+        const [d, mo] = m.date.split('.');
+        const [h, min] = (m.time||'00:00').split(':');
+        return new Date(2026, parseInt(mo)-1, parseInt(d), parseInt(h), parseInt(min)).getTime();
+      };
+      return toMs(a) - toMs(b);
+    } catch(e) { return 0; }
   });
 
   if (!relevant.length) {
@@ -2398,16 +2461,22 @@ function showGantt() {
 
   const allMatches = getMatches();
 
-  // Definicja faz
+  // Definicja faz – kolejki grupowe po numerze w ID
+  // gA1,gA2,gB1,gB2... = I kolejka; gA3,gA4... = II kolejka; gA5,gA6... = III kolejka
+  const groupMatches = allMatches.filter(m=>m.phase==='group');
+  const round1 = groupMatches.filter(m => /g[A-L][12]$/.test(m.id)).map(m=>m.id);
+  const round2 = groupMatches.filter(m => /g[A-L][34]$/.test(m.id)).map(m=>m.id);
+  const round3 = groupMatches.filter(m => /g[A-L][56]$/.test(m.id)).map(m=>m.id);
+
   const phases = [
-    { key:'group1',  label:'I kolejka',     color:'#378ADD', ids: allMatches.filter(m=>m.phase==='group').slice(0,24).map(m=>m.id) },
-    { key:'group2',  label:'II kolejka',    color:'#1D9E75', ids: allMatches.filter(m=>m.phase==='group').slice(24,48).map(m=>m.id) },
-    { key:'group3',  label:'III kolejka',   color:'#BA7517', ids: allMatches.filter(m=>m.phase==='group').slice(48,72).map(m=>m.id) },
+    { key:'group1',  label:'I kolejka',     color:'#378ADD', ids: round1 },
+    { key:'group2',  label:'II kolejka',    color:'#1D9E75', ids: round2 },
+    { key:'group3',  label:'III kolejka',   color:'#BA7517', ids: round3 },
     { key:'r16',     label:'1/16 finału',   color:'#7F77DD', ids: allMatches.filter(m=>m.phase==='r16').map(m=>m.id) },
     { key:'r8',      label:'1/8 finału',    color:'#D85A30', ids: allMatches.filter(m=>m.phase==='r8').map(m=>m.id) },
     { key:'qf',      label:'Ćwierćfinały',  color:'#D4537E', ids: allMatches.filter(m=>m.phase==='qf').map(m=>m.id) },
     { key:'sf',      label:'Półfinały',     color:'#1D9E75', ids: allMatches.filter(m=>m.phase==='sf').map(m=>m.id) },
-    { key:'third',   label:'3. miejsce',    color:'#888780', ids: allMatches.filter(m=>m.phase==='third').map(m=>m.id) },
+    { key:'third',   label:'3. miejsce',    color:'#888780', ids: allMatches.filter(m=>m.phase==='p3'||m.phase==='third').map(m=>m.id) },
     { key:'final',   label:'Finał',         color:'#BA7517', ids: allMatches.filter(m=>m.phase==='final').map(m=>m.id) },
   ];
 
@@ -2456,7 +2525,7 @@ function showGantt() {
     <div style="display:flex;flex-direction:column;gap:5px;">
       ${playerData.map(p=>`
         <div style="display:flex;align-items:center;gap:8px;">
-          <div style="width:112px;font-size:12px;color:var(--muted);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.display}</div>
+          <div style="width:112px;font-size:12px;color:var(--muted);flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${shortName(p.nick)}</div>
           <div style="flex:1;display:flex;gap:2px;height:28px;align-items:center;">
             ${p.phasePts.map((r,ri)=>{
               if(r.pts===0) return '';
@@ -2566,38 +2635,59 @@ function renderStatystyki() {
       </div>
     </div>` : '';
 
-  // --- WYKRES PUNKTÓW (SVG) ---
+  // --- WYKRESY (SVG) ---
   const roundLabels = ['I kolejka','II kolejka','III kolejka','1/16','1/8','Ćwierćf.','Półfinały','Finał'];
-  const presentRounds = roundLabels.filter(r => statsList.some(p => p.roundPts[r] > 0));
+  // Daty końca każdej fazy
+  const roundDates = {'I kolejka':'16.06','II kolejka':'22.06','III kolejka':'27.06','1/16':'03.07','1/8':'07.07','Ćwierćf.':'11.07','Półfinały':'15.07','Finał':'19.07'};
+  // Rundy gdzie admin wpisał oficjalne wyniki (niezależnie od typowań graczy)
+  const presentRounds = roundLabels.filter(r => {
+    const allMatches = getMatches();
+    const rMatches = allMatches.filter(m => {
+      if (r === 'I kolejka') return m.id.match(/g[A-L][12]$/);
+      if (r === 'II kolejka') return m.id.match(/g[A-L][34]$/);
+      if (r === 'III kolejka') return m.id.match(/g[A-L][56]$/);
+      if (r === '1/16') return m.phase === 'r16';
+      if (r === '1/8') return m.phase === 'r8';
+      if (r === 'Ćwierćf.') return m.phase === 'qf';
+      if (r === 'Półfinały') return m.phase === 'sf';
+      if (r === 'Finał') return m.phase === 'final' || m.phase === 'p3';
+      return false;
+    });
+    return rMatches.some(m => {
+      const off = state.official[m.id];
+      return off && off.h !== '' && off.a !== '';
+    });
+  });
 
   let chartHtml = '';
+  // Pokaż wykresy gdy są co najmniej 2 kolejki z wynikami admina
+  // Gracze bez typowań w danej rundzie – ich linia zatrzymuje się, reszta idzie dalej
   if (presentRounds.length >= 2) {
     const W = 560, H = 200, PAD = {t:20, r:20, b:36, l:40};
     const cW = W - PAD.l - PAD.r;
     const cH = H - PAD.t - PAD.b;
 
-    // Skumulowane punkty po rundach
     const cumData = statsList.map(p => {
       let cum = 0;
       return presentRounds.map(r => { cum += (p.roundPts[r]||0); return cum; });
     });
     const maxVal = Math.max(...cumData.flat(), 1);
-
     const xPos = i => PAD.l + (i / (presentRounds.length-1)) * cW;
     const yPos = v => PAD.t + cH - (v / maxVal) * cH;
 
     const lines = statsList.map((p, pi) => {
       const pts = cumData[pi];
       const d = pts.map((v,i) => `${i===0?'M':'L'}${xPos(i).toFixed(1)},${yPos(v).toFixed(1)}`).join(' ');
-      const last = pts[pts.length-1];
-      const lx = xPos(pts.length-1), ly = yPos(last);
+      const lx = xPos(pts.length-1), ly = yPos(pts[pts.length-1]);
       return `<path d="${d}" fill="none" stroke="${p.color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>
         <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4" fill="${p.color}"/>`;
     }).join('');
 
-    const xLabels = presentRounds.map((r,i) =>
-      `<text x="${xPos(i).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="10" fill="var(--muted)">${r}</text>`
-    ).join('');
+    const xLabels = presentRounds.map((r,i) => {
+      const date = roundDates[r] || '';
+      return `<text x="${xPos(i).toFixed(1)}" y="${H-18}" text-anchor="middle" font-size="9" fill="var(--muted)">${r}</text>
+        <text x="${xPos(i).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="9" fill="var(--muted)">${date}</text>`;
+    }).join('');
 
     const gridLines = [0,0.25,0.5,0.75,1].map(f => {
       const y = PAD.t + cH * (1-f);
@@ -2607,8 +2697,42 @@ function renderStatystyki() {
     }).join('');
 
     const legend = statsList.map(p =>
-      `<div class="legend-item"><span class="legend-dot" style="background:${p.color}"></span>${p.display}</div>`
+      `<div class="legend-item"><span class="legend-dot" style="background:${p.color}"></span>${shortName(p.nick)}</div>`
     ).join('');
+
+    // --- WYKRES POZYCJI ---
+    const nPlayers = statsList.length;
+    const PH = Math.max(180, nPlayers * 38 + 56);
+    const yPosP = pos => PAD.t + ((pos - 1) / Math.max(nPlayers - 1, 1)) * (PH - PAD.t - PAD.b);
+
+    const posData = presentRounds.map((r, ri) => {
+      const scores = statsList.map((p, pi) => ({ pi, pts: cumData[pi][ri] }));
+      scores.sort((a,b) => b.pts - a.pts);
+      const pos = {};
+      scores.forEach((s, rank) => { pos[s.pi] = rank + 1; });
+      return pos;
+    });
+
+    const posLines = statsList.map((p, pi) => {
+      const pts = presentRounds.map((r, ri) => posData[ri][pi]);
+      const d = pts.map((v,i) => `${i===0?'M':'L'}${xPos(i).toFixed(1)},${yPosP(v).toFixed(1)}`).join(' ');
+      const lx = xPos(pts.length-1), ly = yPosP(pts[pts.length-1]);
+      return `<path d="${d}" fill="none" stroke="${p.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
+        <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="4.5" fill="${p.color}"/>
+        <text x="${(W-PAD.r+6).toFixed(1)}" y="${(ly+4).toFixed(1)}" font-size="10" fill="${p.color}">${pts[pts.length-1]}.</text>`;
+    }).join('');
+
+    const posGridLines = Array.from({length: nPlayers}, (_,i) => {
+      const y = yPosP(i+1);
+      return `<line x1="${PAD.l}" y1="${y.toFixed(1)}" x2="${W-PAD.r}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <text x="${(PAD.l-5).toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="end" font-size="10" fill="var(--muted)">${i+1}.</text>`;
+    }).join('');
+
+    const posXLabels = presentRounds.map((r,i) => {
+      const date = roundDates[r] || '';
+      return `<text x="${xPos(i).toFixed(1)}" y="${PH-18}" text-anchor="middle" font-size="9" fill="var(--muted)">${r}</text>
+        <text x="${xPos(i).toFixed(1)}" y="${PH-4}" text-anchor="middle" font-size="9" fill="var(--muted)">${date}</text>`;
+    }).join('');
 
     chartHtml = `
     <div class="stats-section">
@@ -2616,6 +2740,15 @@ function renderStatystyki() {
       <div class="chart-wrap">
         <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
           ${gridLines}${lines}${xLabels}
+        </svg>
+        <div class="chart-legend">${legend}</div>
+      </div>
+    </div>
+    <div class="stats-section">
+      <div class="stats-section-title">Pozycja w rankingu po kolejkach</div>
+      <div class="chart-wrap">
+        <svg class="chart-svg" viewBox="0 0 ${W} ${PH}" preserveAspectRatio="xMidYMid meet">
+          ${posGridLines}${posLines}${posXLabels}
         </svg>
         <div class="chart-legend">${legend}</div>
       </div>
@@ -2961,21 +3094,45 @@ function renderDrabinka() {
     }
   });
 
-  function sortGroup(teams) {
-    return teams.sort((a,b)=>b.pkt-a.pkt||(b.bf-b.bc)-(a.bf-a.bc)||b.bf-a.bf);
+  function sortGroup(teams, gMatches) {
+    function h2h(teamA, teamB) {
+      let pktA=0,pktB=0,brA=0,brB=0,bfA=0,bfB=0;
+      (gMatches||[]).forEach(m => {
+        const o=off[m.id]; if(!o||o.h===''||o.a==='') return;
+        const h=parseInt(o.h),a=parseInt(o.a);
+        if(m.home===teamA&&m.away===teamB){bfA+=h;bfB+=a;brA+=h-a;brB+=a-h;if(h>a)pktA+=3;else if(h<a)pktB+=3;else{pktA++;pktB++;}}
+        else if(m.home===teamB&&m.away===teamA){bfB+=h;bfA+=a;brB+=h-a;brA+=a-h;if(h>a)pktB+=3;else if(h<a)pktA+=3;else{pktA++;pktB++;}}
+      });
+      return {pktA,pktB,brA,brB,bfA,bfB};
+    }
+    return teams.sort((a,b)=>{
+      if(b.pkt!==a.pkt) return b.pkt-a.pkt;
+      const bBr=b.bf-b.bc,aBr=a.bf-a.bc;
+      if(bBr!==aBr) return bBr-aBr;
+      if(b.bf!==a.bf) return b.bf-a.bf;
+      const r=h2h(a.team,b.team);
+      if(r.pktA!==r.pktB) return r.pktB-r.pktA;
+      if(r.brA!==r.brB) return r.brB-r.brA;
+      if(r.bfA!==r.bfB) return r.bfB-r.bfA;
+      return 0;
+    });
   }
 
   // Wyciągnij 1., 2., 3. z każdej grupy
   const gPos = {}; // gPos['A'] = [1st, 2nd, 3rd, 4th]
   'ABCDEFGHIJKL'.split('').forEach(g => {
-    const teams = groups[g] ? sortGroup(Object.values(groups[g])) : [];
+    const gMatches = allMatches.filter(m => m.phase==='group' && m.group===g);
+    const teams = groups[g] ? sortGroup(Object.values(groups[g]), gMatches) : [];
     gPos[g] = teams.map(t => t.team);
   });
 
   const get = (g, pos) => gPos[g]?.[pos] || '?';
 
   // Klasyfikacja 3. miejsc – sortuj według tabeli 3. miejsc
-  const thirds = 'ABCDEFGHIJKL'.split('').map(g => groups[g] ? sortGroup(Object.values(groups[g]))[2] : null).filter(Boolean);
+  const thirds = 'ABCDEFGHIJKL'.split('').map(g => {
+    const gMatches = allMatches.filter(m => m.phase==='group' && m.group===g);
+    return groups[g] ? sortGroup(Object.values(groups[g]), gMatches)[2] : null;
+  }).filter(Boolean);
   const sortedThirds = [...thirds].sort((a,b)=>b.pkt-a.pkt||(b.bf-b.bc)-(a.bf-a.bc)||b.bf-a.bf).map(t=>t.team);
   const th = (i) => sortedThirds[i] || '?';
 
@@ -3004,13 +3161,16 @@ function renderDrabinka() {
   const byId = {};
   allMatches.forEach(m => byId[m.id] = m);
 
-  function teamBlock(name, score, isWinner) {
+  function teamBlock(name, score, isWinner, penScore) {
     const flag = name && name !== '?' ? teamFlag(name) : '🏳️';
     const display = name || 'TBD';
     return `<div class="bracket-team ${isWinner?'winner':''}">
       <span style="font-size:13px;">${flag}</span>
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;">${display}</span>
-      <span class="bracket-score ${isWinner?'winner':''}">${score}</span>
+      <div style="display:flex;align-items:center;gap:3px;margin-left:auto;">
+        ${penScore!==undefined ? `<span style="font-size:10px;color:${isWinner?'var(--green)':'var(--muted)'};">(${penScore})</span>` : ''}
+        <span class="bracket-score ${isWinner?'winner':''}">${score}</span>
+      </div>
     </div>`;
   }
 
@@ -3020,14 +3180,21 @@ function renderDrabinka() {
     const hScore = played ? result.h : '';
     const aScore = played ? result.a : '';
     let winner = null;
+    let hPen, aPen;
     if (played) {
       const h=parseInt(result.h), a=parseInt(result.a);
-      winner = h>a ? home : h<a ? away : null;
+      if (h > a) winner = home;
+      else if (a > h) winner = away;
+      else if (result.penH !== undefined && result.penA !== undefined) {
+        hPen = result.penH;
+        aPen = result.penA;
+        winner = parseInt(hPen) > parseInt(aPen) ? home : parseInt(aPen) > parseInt(hPen) ? away : null;
+      }
     }
     const isEmpty = (!home || home==='?') && (!away || away==='?');
     return `<div class="bracket-match" style="${isEmpty?'opacity:0.4':''}">
-      ${teamBlock(home||'TBD', hScore, winner===home)}
-      ${teamBlock(away||'TBD', aScore, winner===away)}
+      ${teamBlock(home||'TBD', hScore, winner===home, hPen)}
+      ${teamBlock(away||'TBD', aScore, winner===away, aPen)}
     </div>`;
   }
 
@@ -3042,7 +3209,15 @@ function renderDrabinka() {
     const result = off[matchId];
     if (!result || result.h==='' || result.a==='') return null;
     const h=parseInt(result.h), a=parseInt(result.a);
-    return h>a ? home : h<a ? away : null;
+    if (h > a) return home;
+    if (a > h) return away;
+    // Remis – sprawdź karne
+    if (result.penH !== undefined && result.penA !== undefined) {
+      const ph=parseInt(result.penH), pa=parseInt(result.penA);
+      if (ph > pa) return home;
+      if (pa > ph) return away;
+    }
+    return null;
   }
 
   const r8pairs = [
@@ -3384,13 +3559,34 @@ function renderWyniki(phase) {
     }) : '<p style="color:var(--muted);font-size:13px;">Brak meczów w tej fazie.</p>');
 }
 
-// Odliczanie – odświeża karty co minutę
+// Odliczanie – aktualizuje tylko liczniki bez rerenderowania całej strony
 let countdownTimer = null;
 function startCountdownTicker() {
   if (countdownTimer) clearInterval(countdownTimer);
   countdownTimer = setInterval(() => {
     const page = document.querySelector('.page.active')?.id;
-    if (page === 'page-typowanie') renderTypowanie();
+    if (page !== 'page-typowanie') return;
+    // Aktualizuj tylko elementy countdown bez rerenderowania
+    document.querySelectorAll('.match-countdown').forEach(el => {
+      const matchId = el.dataset.matchId;
+      if (!matchId) return;
+      const m = getMatches().find(x => x.id === matchId);
+      if (!m || !m.date || !m.time) return;
+      try {
+        const [d, mo] = m.date.split('.');
+        const [h, min] = m.time.split(':');
+        const matchTime = new Date(2026, parseInt(mo)-1, parseInt(d), parseInt(h), parseInt(min||0)).getTime();
+        const diff = matchTime - nowServer();
+        if (diff <= 0) return;
+        const days = Math.floor(diff/86400000);
+        const hrs  = Math.floor((diff%86400000)/3600000);
+        const mins = Math.floor((diff%3600000)/60000);
+        const soon = diff < 3600000;
+        let cdStr = days > 0 ? `za ${days}d ${hrs}h` : hrs > 0 ? `za ${hrs}h ${mins}m` : `za ${mins} min`;
+        el.textContent = `⏱️ ${cdStr}`;
+        el.style.color = soon ? 'var(--red)' : 'var(--gold)';
+      } catch(e) {}
+    });
   }, 60000);
 }
 function stopCountdownTicker() {
@@ -3546,24 +3742,49 @@ async function removeMatch(id) {
   showToast('✓ Mecz usunięty');
 }
 
+function updatePenWinner(matchId) {
+  const m = getMatches().find(x => x.id === matchId);
+  if (!m) return;
+  const h = parseInt(document.getElementById('off_'+matchId+'_h')?.value ?? '');
+  const a = parseInt(document.getElementById('off_'+matchId+'_a')?.value ?? '');
+  const ph = parseInt(document.getElementById('off_'+matchId+'_penh')?.value ?? '');
+  const pa = parseInt(document.getElementById('off_'+matchId+'_pena')?.value ?? '');
+  const el = document.getElementById('pen_winner_'+matchId);
+  if (!el) return;
+  // Pokaż wynik karnych tylko gdy remis po 90 min
+  const isRemis = !isNaN(h) && !isNaN(a) && h === a;
+  const wrap = document.getElementById('pen_wrap_'+matchId);
+  if (wrap) wrap.style.opacity = isRemis ? '1' : '0.4';
+  if (!isNaN(ph) && !isNaN(pa) && ph !== pa && isRemis) {
+    el.textContent = `→ ${ph > pa ? m.home : m.away} awansuje`;
+    el.style.color = 'var(--green)';
+  } else {
+    el.textContent = '';
+  }
+}
+window.updatePenWinner = updatePenWinner;
+
 async function saveOfficialResults() {
-  // Zbierz tylko mecze widoczne w DOM (aktualnej fazy)
   let saved = 0;
   getMatches().forEach(m => {
-    const hEl = document.getElementById(m.id+'_h');
-    const aEl = document.getElementById(m.id+'_a');
-    if (!hEl || !aEl) return; // nie widoczny – pomijaj, nie nadpisuj
+    const hEl = document.getElementById('off_'+m.id+'_h');
+    const aEl = document.getElementById('off_'+m.id+'_a');
+    if (!hEl || !aEl) return;
     const h = hEl.value ?? '';
     const a = aEl.value ?? '';
     if (h !== '' && a !== '') {
       state.official[m.id] = {h: h.toString(), a: a.toString()};
+      // Zapisz karne jeśli mecz pucharowy
+      const penH = document.getElementById('off_'+m.id+'_penh')?.value ?? '';
+      const penA = document.getElementById('off_'+m.id+'_pena')?.value ?? '';
+      if (penH !== '' && penA !== '') {
+        state.official[m.id].penH = penH.toString();
+        state.official[m.id].penA = penA.toString();
+      }
       saved++;
     }
   });
-  if (saved === 0) {
-    showToast('⚠️ Wpisz wyniki przed zapisaniem!');
-    return;
-  }
+  if (saved === 0) { showToast('⚠️ Wpisz wyniki przed zapisaniem!'); return; }
   recalcPoints();
   await fbSet('official', state.official);
   await fbSet('points', state.points);
@@ -3680,8 +3901,8 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v0.58';
-const BUILD_DATE = '5 czerwca 2026, 14:42';
+const BUILD_VERSION = 'v0.80';
+const BUILD_DATE = '6 czerwca 2026, 00:32';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
