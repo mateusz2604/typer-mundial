@@ -715,9 +715,13 @@ nav::-webkit-scrollbar { display: none; }
 
   <!-- TYPOWANIE MISTRZA -->
   <div class="page" id="page-mistrz">
-    <p class="page-title">👑 <span>Mistrz turnieju</span></p>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;">Wytypuj kto zostanie mistrzem świata 2026. Dla zabawy!</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+      <p class="page-title" style="margin:0;">👑 <span>Typy specjalne</span></p>
+      <button class="btn sm secondary" onclick="exportSpecials()" style="font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0;padding:8px 14px;width:auto;margin:0;">📸 Eksportuj</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:1.5rem;">Typowania dla zabawy – bez dodatkowych punktów. Sprawdzamy kto miał najlepszą intuicję! 🎯</p>
     <div id="mistrzContent"></div>
+    <canvas id="specialsCanvas" style="display:none;"></canvas>
   </div>
 
   <!-- TABELA GRUP -->
@@ -2422,72 +2426,92 @@ function renderStatystyki() {
 window.renderStatystyki = renderStatystyki;
 
 // ── TYPOWANIE MISTRZA ────────────────────────────────────────
+const SPECIAL_PICKS = [
+  { key: 'mistrz',       icon: '🏆', label: 'Mistrz turnieju',          desc: 'Kto zostanie mistrzem świata 2026?',           type: 'team' },
+  { key: 'finalista1',   icon: '🥈', label: 'Finalista #1',             desc: 'Pierwsza drużyna w finale (przegrana strona)', type: 'team' },
+  { key: 'finalista2',   icon: '🥉', label: 'Finalista #2',             desc: 'Druga drużyna w finale (przegrana strona)',    type: 'team' },
+  { key: 'krolStrzelcow',icon: '⚽', label: 'Król strzelców',           desc: 'Kto strzeli najwięcej goli na turnieju?',      type: 'team' },
+  { key: 'rozczarowanie',icon: '😤', label: 'Największe rozczarowanie', desc: 'Który zespół najbardziej zawiedzie?',          type: 'team' },
+  { key: 'niespodzianka',icon: '🌟', label: 'Największa niespodzianka', desc: 'Który zespół zaskoczy wszystkich pozytywnie?', type: 'team' },
+];
+
 async function renderMistrz() {
   const container = document.getElementById('mistrzContent');
-  const snap = await get(ref(db, 'mundial2026/mistrz'));
-  const picks = snap.exists() ? snap.val() : {};
-  const myPick = picks[currentUser] || null;
+  const snap = await get(ref(db, 'mundial2026/specials'));
+  const allPicks = snap.exists() ? snap.val() : {};
   const approved = Object.keys(state.players).filter(nick => {
     const p = state.players[nick];
     return typeof p==='object' ? p.status==='approved' : p==='approved';
   });
 
-  // Statystyki typowań
-  const tally = {};
-  approved.forEach(nick => {
-    const pick = picks[nick];
-    if (pick) tally[pick] = (tally[pick]||0) + 1;
-  });
-  const sorted = Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+  const teamSelectOpts = `<option value="">-- Wybierz drużynę --</option>${ALL_TEAMS.map(t=>`<option value="${t.name}">${t.name}</option>`).join('')}`;
 
-  const mySection = !isAdmin ? `
-    <div class="champion-card" style="border-color:${myPick?'var(--green)':'var(--border)'};">
-      <div style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Twój typ</div>
-      ${myPick ? `<div style="margin-top:10px;display:flex;align-items:center;gap:10px;">
-        <span style="font-size:32px;">${teamFlag(myPick)}</span>
+  let html = '';
+  SPECIAL_PICKS.forEach(pick => {
+    const myPick = !isAdmin ? (allPicks[currentUser]?.[pick.key] || '') : '';
+    const tally = {};
+    approved.forEach(nick => {
+      const v = allPicks[nick]?.[pick.key];
+      if (v) tally[v] = (tally[v]||0) + 1;
+    });
+    const sorted = Object.entries(tally).sort((a,b)=>b[1]-a[1]);
+    const noPick = approved.filter(n => !allPicks[n]?.[pick.key]);
+
+    html += `<div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.25rem;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span style="font-size:20px;">${pick.icon}</span>
         <div>
-          <div style="font-size:18px;font-weight:500;">${myPick}</div>
-          <div style="font-size:12px;color:var(--green);">✓ Wytypowany</div>
+          <div style="font-size:15px;font-weight:600;">${pick.label}</div>
+          <div style="font-size:12px;color:var(--muted);">${pick.desc}</div>
         </div>
-        <button onclick="saveMistrz('')" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;">✕ zmień</button>
-      </div>` : `
-      <div style="font-size:13px;color:var(--muted);margin:8px 0;">Wybierz drużynę:</div>
-      <select class="champion-select" onchange="saveMistrz(this.value)">
-        <option value="">-- Wybierz mistrza --</option>
-        ${ALL_TEAMS.map(t=>`<option value="${t.name}">${t.flag} ${t.name}</option>`).join('')}
-      </select>`}
-    </div>` : '';
+      </div>
+      ${!isAdmin ? `
+      <div style="margin:12px 0;padding-top:10px;border-top:0.5px solid var(--border);">
+        ${myPick ? `
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px;">${teamFlag(myPick)}</span>
+            <span style="font-size:14px;font-weight:500;color:var(--green);">✓ ${myPick}</span>
+            <button onclick="saveSpecial('${pick.key}','')" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;">✕ zmień</button>
+          </div>` : `
+          <select style="width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;"
+            onchange="saveSpecial('${pick.key}',this.value);this.blur()">
+            ${teamSelectOpts}
+          </select>`}
+      </div>` : ''}
+      ${sorted.length ? `
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;">
+          ${sorted.map(([team, count]) => `
+            <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);">
+              <span>${teamFlag(team)}</span>
+              <span style="font-size:13px;flex:1;">${team}</span>
+              <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                ${approved.filter(n=>allPicks[n]?.[pick.key]===team).map(n=>`<span style="font-size:10px;background:var(--bg3);padding:2px 6px;border-radius:20px;color:var(--muted);">${getDisplayName(n)}</span>`).join('')}
+              </div>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--green);min-width:20px;text-align:right;">${count}</span>
+            </div>`).join('')}
+          ${noPick.length ? `<div style="font-size:11px;color:var(--muted);padding-top:6px;">Bez typowania: ${noPick.map(n=>getDisplayName(n)).join(', ')}</div>` : ''}
+        </div>` : `<p style="font-size:12px;color:var(--muted);margin-top:8px;">Brak typowań.</p>`}
+    </div>`;
+  });
 
-  const leaderboard = sorted.length ? `
-    <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Typowania wszystkich graczy</div>
-    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
-      ${sorted.map(([team, count], i) => `
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:0.5px solid var(--border);">
-          <span style="font-size:22px;">${teamFlag(team)}</span>
-          <span style="font-size:14px;font-weight:500;flex:1;">${team}</span>
-          <div style="display:flex;gap:6px;align-items:center;">
-            ${approved.filter(n=>picks[n]===team).map(n=>`<span style="font-size:11px;background:var(--bg3);padding:2px 7px;border-radius:20px;color:var(--muted);">${getDisplayName(n)}</span>`).join('')}
-          </div>
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--green);min-width:24px;text-align:right;">${count}</span>
-        </div>`).join('')}
-      ${approved.filter(n=>!picks[n]).length ? `
-        <div style="padding:10px 14px;font-size:12px;color:var(--muted);">
-          Bez typowania: ${approved.filter(n=>!picks[n]).map(n=>getDisplayName(n)).join(', ')}
-        </div>` : ''}
-    </div>` : '<p style="color:var(--muted);font-size:13px;">Nikt jeszcze nie wytypował mistrza.</p>';
-
-  container.innerHTML = mySection + leaderboard;
+  container.innerHTML = html;
 }
 
-async function saveMistrz(team) {
+async function saveSpecial(key, value) {
   if (!currentUser || isAdmin) return;
-  if (!team) {
-    await fbRemove(`mistrz/${currentUser}`);
+  if (!value) {
+    await fbRemove(`specials/${currentUser}/${key}`);
+    showToast('✓ Typ usunięty');
   } else {
-    await fbSet(`mistrz/${currentUser}`, team);
+    await fbSet(`specials/${currentUser}/${key}`, value);
+    showToast(`✓ Zapisano: ${value}`);
   }
-  showToast(team ? `✓ Wytypowano: ${team}` : '✓ Typ usunięty');
   renderMistrz();
+}
+
+// Zachowaj kompatybilność wsteczną – stary saveMistrz
+async function saveMistrz(team) {
+  await saveSpecial('mistrz', team);
 }
 
 // ── HISTORIA RANKINGU ────────────────────────────────────────
@@ -2510,8 +2534,123 @@ async function getRankingHistory() {
   return snap.exists() ? snap.val() : null;
 }
 
-window.renderMistrz = renderMistrz;
+async function exportSpecials() {
+  const theme = document.documentElement.getAttribute('data-theme') || 'noc';
+  const isDark = theme !== 'jasny';
+  const bg     = isDark ? '#0a0e0a' : '#f6f8fa';
+  const bg2    = isDark ? '#111611' : '#ffffff';
+  const border = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+  const accent = theme==='standard'?'#f5c518':theme==='jasny'?'#1a7f37':theme==='czerwony'?'#ff4060':theme==='fiolet'?'#a855f7':theme==='ocean'?'#38bdf8':theme==='pomaranczowy'?'#d4af37':'#00c853';
+  const textCol = isDark ? '#f0f4f0' : '#1f2328';
+  const mutedCol = isDark ? '#7a907a' : '#636c76';
+
+  // Pobierz dane
+  const snap = await get(ref(db, 'mundial2026/specials'));
+  const allPicks = snap.exists() ? snap.val() : {};
+  const approved = Object.keys(state.players).filter(nick => {
+    const p = state.players[nick]; return typeof p==='object'?p.status==='approved':p==='approved';
+  });
+
+  const W = 600;
+  const ROW_H = 72;
+  const HEADER = 100;
+  const FOOTER = 40;
+  const PAD = 28;
+  const H = HEADER + SPECIAL_PICKS.length * ROW_H + FOOTER + PAD;
+
+  const canvas = document.getElementById('specialsCanvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // Tło
+  const grad = ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0, bg);
+  grad.addColorStop(1, isDark ? bg+'cc' : '#eef2f7');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,W,H);
+
+  // Pasek akcentu
+  ctx.fillStyle = accent;
+  ctx.fillRect(0,0,W,4);
+
+  // Nagłówek
+  ctx.fillStyle = accent;
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText('👑 TYPY SPECJALNE', PAD, 44);
+  ctx.fillStyle = mutedCol;
+  ctx.font = '13px sans-serif';
+  ctx.fillText(`Typer MŚ 2026 · ${new Date().toLocaleDateString('pl-PL',{day:'2-digit',month:'long',year:'numeric'})}`, PAD, 66);
+
+  // Linia
+  ctx.strokeStyle = border;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, 82); ctx.lineTo(W-PAD, 82); ctx.stroke();
+
+  // Wiersze
+  SPECIAL_PICKS.forEach((pick, i) => {
+    const y = HEADER + i * ROW_H;
+
+    // Tło wiersza
+    if (i%2===0) {
+      ctx.fillStyle = isDark?'rgba(255,255,255,0.02)':'rgba(0,0,0,0.02)';
+      ctx.fillRect(PAD-8, y, W-PAD*2+16, ROW_H);
+    }
+
+    // Ikona + label
+    ctx.font = '20px sans-serif';
+    ctx.fillText(pick.icon, PAD, y+28);
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillStyle = textCol;
+    ctx.fillText(pick.label, PAD+30, y+28);
+    ctx.font = '11px sans-serif';
+    ctx.fillStyle = mutedCol;
+    ctx.fillText(pick.desc, PAD+30, y+46);
+
+    // Tally – kto co wybrał
+    const tally = {};
+    approved.forEach(nick => {
+      const v = allPicks[nick]?.[pick.key];
+      if (v) tally[v] = [...(tally[v]||[]), getDisplayName(nick)];
+    });
+    const sorted = Object.entries(tally).sort((a,b)=>b[1].length-a[1].length);
+
+    ctx.font = '13px sans-serif';
+    ctx.fillStyle = accent;
+    ctx.textAlign = 'right';
+    if (sorted.length) {
+      const top = sorted[0];
+      ctx.fillText(`${top[0]} (${top[1].join(', ')})`, W-PAD, y+36);
+    } else {
+      ctx.fillStyle = mutedCol;
+      ctx.fillText('brak typowań', W-PAD, y+36);
+    }
+    ctx.textAlign = 'left';
+
+    // Separator
+    if (i < SPECIAL_PICKS.length-1) {
+      ctx.strokeStyle = border;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(PAD, y+ROW_H); ctx.lineTo(W-PAD, y+ROW_H); ctx.stroke();
+    }
+  });
+
+  // Stopka
+  ctx.fillStyle = mutedCol;
+  ctx.font = '11px sans-serif';
+  ctx.fillText('typymundial.netlify.app', PAD, H-12);
+  ctx.textAlign='right';
+  ctx.fillText('⚽ FIFA World Cup 2026', W-PAD, H-12);
+  ctx.textAlign='left';
+
+  const link = document.createElement('a');
+  link.download = `typy-specjalne-ms2026-${new Date().toLocaleDateString('pl-PL').replace(/\./g,'-')}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('✓ Obrazek pobrany!');
+}
+window.exportSpecials = exportSpecials;
 window.saveMistrz   = saveMistrz;
+window.saveSpecial  = saveSpecial;
 function renderDrabinka() {
   const off = state.official;
   const allMatches = getMatches();
@@ -3051,6 +3190,7 @@ async function resetFullFirebase() {
   await fbRemove('points');
   await fbRemove('chat');
   await fbRemove('mistrz');
+  await fbRemove('specials');
   await fbRemove('rankingHistory');
 
   state.players = {};
@@ -3252,8 +3392,8 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v0.54';
-const BUILD_DATE = '4 czerwca 2026, 23:00';
+const BUILD_VERSION = 'v0.56';
+const BUILD_DATE = '5 czerwca 2026, 12:58';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
