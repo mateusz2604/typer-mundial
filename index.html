@@ -1623,6 +1623,9 @@ function unsubscribeFirebase() {
 async function fbSet(path, value) {
   await set(ref(db, 'mundial2026/' + path), value);
 }
+async function fbRemove(path) {
+  await remove(ref(db, 'mundial2026/' + path));
+}
 function getMatches() { return state.matches || DEFAULT_MATCHES; }
 
 // Sprawdza czy mecz jest zablokowany (już się zaczął lub minął)
