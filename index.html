@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Typer MŚ"/>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="icon" type="image/png" href="icon-192.png"/>
 <link rel="apple-touch-icon" href="icon-192.png"/>
 <link rel="manifest" href="manifest.json"/>
@@ -938,10 +937,6 @@ const ALL_TEAMS = [
   {name:'Polska', flag:'🇵🇱'},
 ];
 
-function teamLabel(name) {
-  const t = ALL_TEAMS.find(t => t.name === name);
-  return t ? `${t.flag} ${t.name}` : name;
-}
 // Kody ISO 3166-1 alpha-2 dla flagcdn.com
 const TEAM_CODES = {
   'Meksyk':'mx','RPA':'za','Korea Płd.':'kr','Czechy':'cz',
@@ -1627,17 +1622,6 @@ function unsubscribeFirebase() {
 async function fbSet(path, value) {
   await set(ref(db, 'mundial2026/' + path), value);
 }
-async function fbUpdate(path, value) {
-  await update(ref(db, 'mundial2026/' + path), value);
-}
-async function fbRemove(path) {
-  await remove(ref(db, 'mundial2026/' + path));
-}
-
-// Zachowana kompatybilność – saveStateLocal teraz nic nie robi
-// (każda funkcja zapisuje bezpośrednio przez fbSet/fbUpdate)
-function saveStateLocal() {}
-
 function getMatches() { return state.matches || DEFAULT_MATCHES; }
 
 // Sprawdza czy mecz jest zablokowany (już się zaczął lub minął)
@@ -1814,7 +1798,14 @@ function showPage(name, btn) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   if (btn) btn.classList.add('active');
-  if (name==='typowanie') { setStickyBar('Zapisz typowania ⚽', saveAllPredictions); renderTypowanie(); }
+  if (name==='typowanie') {
+    setStickyBar('Zapisz typowania ⚽', saveAllPredictions);
+    // Zawsze pobierz świeże typowania z Firebase przed renderowaniem
+    get(ref(db, 'mundial2026/predictions/' + currentUser)).then(snap => {
+      if (snap.exists()) state.predictions[currentUser] = snap.val();
+      renderTypowanie();
+    }).catch(() => renderTypowanie());
+  }
   else if (name==='mecze') { setStickyBar('Zapisz mecze 📅', saveMatches); renderMecze(); }
   else if (name==='admin') { setStickyBar('Zapisz wyniki i przelicz punkty ⚡', saveOfficialResults); renderWyniki(); }
   else { setStickyBar(null, null); }
@@ -2060,18 +2051,30 @@ function renderTypowanie(phase) {
 }
 
 async function saveAllPredictions() {
-  if (!state.predictions[currentUser]) state.predictions[currentUser]={};
-  let skipped = 0;
+  // Pobierz aktualne typowania z Firebase żeby nie nadpisać starych
+  const snap = await get(ref(db, 'mundial2026/predictions/' + currentUser));
+  const existing = snap.exists() ? snap.val() : {};
+  // Połącz istniejące z nowymi (nowe nadpisują stare)
+  if (!state.predictions[currentUser]) state.predictions[currentUser] = {};
+  Object.assign(state.predictions[currentUser], existing);
+
+  let saved = 0, skipped = 0;
   getMatches().forEach(m => {
     if (isMatchLocked(m)) { skipped++; return; }
-    const h=document.getElementById(m.id+'_h')?.value??'';
-    const a=document.getElementById(m.id+'_a')?.value??'';
-    state.predictions[currentUser][m.id]={h:h.toString(),a:a.toString()};
+    const hEl = document.getElementById(m.id+'_h');
+    const aEl = document.getElementById(m.id+'_a');
+    // Zapisuj TYLKO jeśli pole istnieje w DOM (akordeon otwarty)
+    if (!hEl || !aEl) return;
+    const h = hEl.value ?? '';
+    const a = aEl.value ?? '';
+    state.predictions[currentUser][m.id] = {h: h.toString(), a: a.toString()};
+    saved++;
   });
+
   await fbSet('predictions/' + currentUser, state.predictions[currentUser]);
-  // NIE rerenderujemy – akordeony zostają otwarte
-  if (skipped > 0) showToast(`✓ Zapisano! (${skipped} meczów zablokowanych)`);
-  else showToast('✓ Typowania zapisane!');
+  if (saved === 0) showToast('⚠️ Otwórz akordeon z meczami żeby zapisać!');
+  else if (skipped > 0) showToast(`✓ Zapisano ${saved} typowań! (${skipped} zablokowanych)`);
+  else showToast(`✓ Zapisano ${saved} typowań!`);
 }
 
 function renderMoje() {
@@ -3901,8 +3904,8 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v0.80';
-const BUILD_DATE = '6 czerwca 2026, 00:32';
+const BUILD_VERSION = 'v0.55';
+const BUILD_DATE = '5 czerwca 2026, 12:53';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
