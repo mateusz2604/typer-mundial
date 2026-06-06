@@ -1738,9 +1738,21 @@ function enterApp() {
   } else {
     document.getElementById('userNameDisplay').textContent = currentUser;
     document.getElementById('userAvatar').textContent = currentUser.charAt(0).toUpperCase();
+    // Ukryj wszystkie zakładki admina i pokaż zakładki gracza
+    document.querySelectorAll('.admin-only').forEach(el => el.style.display='none');
+    document.getElementById('nav-typowanie').style.display='';
+    document.getElementById('nav-moje').style.display='';
+    // Resetuj wszystkie strony i aktywuj typowanie
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-typowanie').classList.add('active');
+    document.getElementById('nav-typowanie').classList.add('active');
     setStickyBar('Zapisz typowania ⚽', saveAllPredictions);
-    renderTypowanie();
-    // Sprawdź profil po załadowaniu danych z Firebase (krótkie opóźnienie)
+    // Pobierz dane i wyrenderuj
+    get(ref(db, 'mundial2026/predictions/' + currentUser)).then(snap => {
+      if (snap.exists()) state.predictions[currentUser] = snap.val();
+      renderTypowanie();
+    }).catch(() => renderTypowanie());
     setTimeout(() => {
       if (needsProfile()) {
         showProfileScreen();
