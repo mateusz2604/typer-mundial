@@ -1581,22 +1581,23 @@ async function getState() {
 
 // ── Subskrypcje na żywo ────────────────────────────────────
 function subscribeFirebase() {
-  const paths = ['official', 'players', 'points', 'matches'];
+  const paths = ['official', 'players', 'points', 'matches', 'predictions'];
   paths.forEach(path => {
     const r = ref(db, 'mundial2026/' + path);
     const fn = onValue(r, snap => {
-      state[path] = snap.exists() ? snap.val() : (path === 'matches' ? null : (path === 'version' ? '' : {}));
+      state[path] = snap.exists() ? snap.val() : (path === 'matches' ? null : {});
       if (path === 'matches' && !state.matches) state.matches = DEFAULT_MATCHES;
-      if (path === 'version') updateVersionDisplay();
       const active = document.querySelector('.page.active')?.id;
       // Typowanie NIE rerenderuje – żeby nie zwijać akordeonów
-      if (active === 'page-tabela')  renderTabela();
-      if (active === 'page-ranking') renderRanking();
-      if (active === 'page-moje')    renderMoje();
-      if (active === 'page-wyniki' || active === 'page-admin') renderWyniki();
-      if (active === 'page-mecze')   renderMecze();
-      if (active === 'page-gracze')  renderGracze();
-      if (path === 'official' && !isAdmin) checkNewResults();
+      if (path !== 'predictions') {
+        if (active === 'page-tabela')  renderTabela();
+        if (active === 'page-ranking') renderRanking();
+        if (active === 'page-moje')    renderMoje();
+        if (active === 'page-wyniki' || active === 'page-admin') renderWyniki();
+        if (active === 'page-mecze')   renderMecze();
+        if (active === 'page-gracze')  renderGracze();
+        if (path === 'official' && !isAdmin) checkNewResults();
+      }
     });
     fbListeners[path] = { r, fn };
   });
@@ -2054,9 +2055,9 @@ async function saveAllPredictions() {
   // Pobierz aktualne typowania z Firebase żeby nie nadpisać starych
   const snap = await get(ref(db, 'mundial2026/predictions/' + currentUser));
   const existing = snap.exists() ? snap.val() : {};
-  // Połącz istniejące z nowymi (nowe nadpisują stare)
-  if (!state.predictions[currentUser]) state.predictions[currentUser] = {};
-  Object.assign(state.predictions[currentUser], existing);
+
+  // Zacznij od tego co jest w Firebase
+  const merged = Object.assign({}, existing);
 
   let saved = 0, skipped = 0;
   getMatches().forEach(m => {
@@ -2065,14 +2066,18 @@ async function saveAllPredictions() {
     const aEl = document.getElementById(m.id+'_a');
     // Zapisuj TYLKO jeśli pole istnieje w DOM (akordeon otwarty)
     if (!hEl || !aEl) return;
-    const h = hEl.value ?? '';
-    const a = aEl.value ?? '';
-    state.predictions[currentUser][m.id] = {h: h.toString(), a: a.toString()};
+    const h = hEl.value.trim();
+    const a = aEl.value.trim();
+    // Zapisuj TYLKO jeśli obydwa pola mają wartość
+    if (h === '' || a === '') return;
+    merged[m.id] = {h, a};
     saved++;
   });
 
-  await fbSet('predictions/' + currentUser, state.predictions[currentUser]);
-  if (saved === 0) showToast('⚠️ Otwórz akordeon z meczami żeby zapisać!');
+  state.predictions[currentUser] = merged;
+  await fbSet('predictions/' + currentUser, merged);
+
+  if (saved === 0) showToast('⚠️ Wpisz wyniki i otwórz akordeon!');
   else if (skipped > 0) showToast(`✓ Zapisano ${saved} typowań! (${skipped} zablokowanych)`);
   else showToast(`✓ Zapisano ${saved} typowań!`);
 }
