@@ -1711,14 +1711,16 @@ function getDisplayName(nick) {
 
 function enterApp() {
   const remember = document.getElementById('rememberMe')?.checked;
+
+  // Wyczyść WSZYSTKO przed zapisem nowej sesji
+  localStorage.removeItem('ms26_user');
+  localStorage.removeItem('ms26_admin');
+  sessionStorage.removeItem('ms26_user');
+  sessionStorage.removeItem('ms26_admin');
+
   const storage = remember ? localStorage : sessionStorage;
   storage.setItem('ms26_user', currentUser);
   storage.setItem('ms26_admin', isAdmin ? '1' : '0');
-  if (remember) {
-    // Wyczyść sessionStorage żeby nie dublować
-    sessionStorage.removeItem('ms26_user');
-    sessionStorage.removeItem('ms26_admin');
-  }
 
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appScreen').classList.add('visible');
