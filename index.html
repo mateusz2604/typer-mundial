@@ -1626,7 +1626,20 @@ async function fbSet(path, value) {
 async function fbRemove(path) {
   await remove(ref(db, 'mundial2026/' + path));
 }
-function getMatches() { return state.matches || DEFAULT_MATCHES; }
+function getMatches() {
+  const m = state.matches;
+  if (!m) return DEFAULT_MATCHES;
+  // Firebase może zwrócić obiekt {0:{...}, 1:{...}} zamiast tablicy
+  let arr;
+  if (Array.isArray(m)) {
+    arr = m;
+  } else if (typeof m === 'object') {
+    arr = Object.values(m);
+  } else {
+    return DEFAULT_MATCHES;
+  }
+  return arr.length > 0 ? arr : DEFAULT_MATCHES;
+}
 
 // Sprawdza czy mecz jest zablokowany (już się zaczął lub minął)
 function isMatchLocked(m) {
@@ -2226,6 +2239,7 @@ function renderTabela() {
     // Oblicz wyniki bezpośrednich meczów (h2h) między drużynami
     function h2h(teamA, teamB) {
       let pktA=0, pktB=0, brA=0, brB=0, bfA=0, bfB=0;
+      if (!groupMatches || !Array.isArray(groupMatches)) return {pktA, pktB, brA, brB, bfA, bfB};
       groupMatches.forEach(m => {
         const off = official[m.id];
         if (!off || off.h==='' || off.a==='') return;
@@ -2258,7 +2272,7 @@ function renderTabela() {
     });
   }
 
-  const groupMatches = matches.filter(m => m.phase === 'group' && /^[A-L]$/.test(m.group));
+  const groupMatches = Array.isArray(matches) ? matches.filter(m => m.phase === 'group' && /^[A-L]$/.test(m.group)) : [];
 
   // Tabele grup A–L
   const groupTablesHtml = sortedGroups.map(g => {
@@ -3706,9 +3720,13 @@ async function resetFullFirebase() {
   state.predictions = {};
   state.official = {};
   state.points = {};
+  if (!state.matches) state.matches = DEFAULT_MATCHES;
 
   showToast('✓ Pełny reset wykonany! Możesz zaczynać od nowa.');
-  setTimeout(() => renderGracze(), 500);
+  setTimeout(() => {
+    renderGracze();
+    renderTabela();
+  }, 500);
 }
 
 async function saveDisplayName(nick) {
