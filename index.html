@@ -547,6 +547,43 @@ nav::-webkit-scrollbar { display: none; }
   <div class="login-logo">Typer<br/><span>MŚ 2026</span></div>
   <div class="login-sub">FIFA World Cup · USA / Kanada / Meksyk</div>
 
+  <!-- BANER PODSUMOWANIA TURNIEJU -->
+  <div id="summaryBanner" style="
+    width:100%;max-width:420px;
+    background:linear-gradient(135deg,#0d1a00,#0a1500);
+    border:1px solid rgba(0,200,83,.4);
+    border-radius:16px;padding:20px 24px;
+    margin-bottom:24px;text-align:center;
+    box-shadow:0 0 40px rgba(0,200,83,.15),0 0 80px rgba(0,200,83,.06);
+    animation:formIn 0.5s 0.3s cubic-bezier(0.22,1,0.36,1) both;
+    position:relative;overflow:hidden;
+  ">
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;opacity:.04;pointer-events:none;">🏆</div>
+    <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:8px;">⚽ Mistrzostwa Świata 2026 · Zakończone</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.06em;color:#fff;margin-bottom:4px;">
+      🇪🇸 Hiszpania Mistrzem Świata!
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;">
+      104 mecze · 300 goli · Finał: Hiszpania 1:0 Argentyna
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px;">
+      🥇 Mariusz Staniewski wygrał Typera MŚ 2026 z <strong style="color:var(--green)">93 punktami</strong> i rekordem 17 dokładnych trafień!
+    </div>
+    <a href="historia_ms2026.html" target="_blank" style="
+      display:inline-block;
+      background:var(--green);color:#000;
+      font-family:'Bebas Neue',sans-serif;
+      font-size:20px;letter-spacing:.08em;
+      padding:12px 32px;border-radius:10px;
+      text-decoration:none;
+      box-shadow:0 0 20px rgba(0,200,83,.4);
+      transition:all .2s;
+    " onmouseover="this.style.background='#00e676';this.style.transform='scale(1.03)'"
+       onmouseout="this.style.background='#00c853';this.style.transform='scale(1)'">
+      🏆 PODSUMOWANIE TURNIEJU
+    </a>
+  </div>
+
   <div class="login-card" id="loginForm">
     <h2>Dołącz do gry</h2>
     <div class="form-group">
@@ -781,15 +818,46 @@ nav::-webkit-scrollbar { display: none; }
   <div class="page" id="page-live">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px;">
       <p class="page-title" style="margin:0;">🔴 <span>Live & Wyniki</span></p>
-      <button onclick="loadLiveData()" style="background:var(--green);border:none;border-radius:8px;color:var(--btn-color,#000);padding:8px 16px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">🔄 Odśwież</button>
+      <button onclick="refreshLiveWidgets()" style="background:var(--green);border:none;border-radius:8px;color:var(--btn-color,#000);padding:8px 16px;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">🔄 Odśwież</button>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;">
-      <button onclick="switchLiveTab('live')"     class="live-tab-btn active" data-tab="live">⚽ Na żywo</button>
-      <button onclick="switchLiveTab('today')"    class="live-tab-btn" data-tab="today">📅 Dzisiaj</button>
-      <button onclick="switchLiveTab('upcoming')" class="live-tab-btn" data-tab="upcoming">🗓️ Najbliższe</button>
-      <button onclick="switchLiveTab('standings')"class="live-tab-btn" data-tab="standings">📊 Tabela</button>
+
+    <!-- API-Sports Widget Config -->
+    <api-sports-widget
+      data-type="config"
+      data-key="ec8fcfe610454696f106f7950ac44ecd"
+      data-sport="football"
+      data-lang="pl"
+      data-theme="dark"
+      data-show-errors="true"
+      data-show-logos="true"
+      data-refresh="false"
+      data-game-tab="statistics"
+      data-standings="true"
+      data-target-standings="true"
+      data-target-game="#live-game-content"
+      data-target-player="modal"
+      data-target-team="modal"
+      data-tab="today"
+      data-league="1"
+      data-season="2026"
+    ></api-sports-widget>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <p style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Terminarz</p>
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <api-sports-widget data-type="league" style="height:70vh;"></api-sports-widget>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Szczegóły meczu</p>
+        <div id="live-game-content" style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:200px;">
+          <p style="color:var(--muted);font-size:13px;padding:1rem;">Kliknij mecz żeby zobaczyć szczegóły</p>
+        </div>
+      </div>
     </div>
-    <div id="liveContent"><p style="color:var(--muted);font-size:13px;">Kliknij „Odśwież" żeby załadować dane z API.</p></div>
+
+    <script type="module" src="https://widgets.api-sports.io/3.1.0/widgets.js"></script>
   </div>
 
   <!-- DRABINKA -->
@@ -1220,8 +1288,19 @@ async function switchLiveTab(tab) {
   }
 }
 
-window.loadLiveData  = loadLiveData;
-window.switchLiveTab = switchLiveTab;
+function refreshLiveWidgets() {
+  // Przeładuj widgety przez usunięcie i ponowne dodanie
+  const page = document.getElementById('page-live');
+  const widgets = page.querySelectorAll('api-sports-widget[data-type="league"]');
+  widgets.forEach(w => {
+    const parent = w.parentNode;
+    const clone = w.cloneNode(true);
+    parent.removeChild(w);
+    parent.appendChild(clone);
+  });
+  showToast('🔄 Odświeżono!');
+}
+window.refreshLiveWidgets = refreshLiveWidgets;
 
 function showWelcomeIfNeeded() {
   if (!localStorage.getItem('ms26_welcomed')) {
@@ -1885,7 +1964,20 @@ function matchCard(m, homeVal, awayVal, disabled, showResult, official, forceUnl
     if (locked && played) {
       timeBadge = '<span class="finished-badge">✓ Zakończony</span>';
     } else if (locked) {
-      timeBadge = '<span class="live-badge"><span class="live-dot"></span>LIVE</span>';
+      // Pokaż LIVE tylko jeśli mecz zaczął się mniej niż 2h temu
+      // Po 2h bez wyniku – pokaż "Zakończony" zamiast LIVE
+      try {
+        const parts = m.date.split('.'), tp = m.time.split(':');
+        const matchTime = new Date(2026, parseInt(parts[1])-1, parseInt(parts[0]), parseInt(tp[0]), parseInt(tp[1]||0)).getTime();
+        const elapsed = nowServer() - matchTime;
+        if (elapsed < 2 * 60 * 60 * 1000) {
+          timeBadge = '<span class="live-badge"><span class="live-dot"></span>LIVE</span>';
+        } else {
+          timeBadge = '<span class="finished-badge">✓ Zakończony</span>';
+        }
+      } catch(e) {
+        timeBadge = '<span class="finished-badge">✓ Zakończony</span>';
+      }
     } else if (m.time && m.date) {
       // Licznik
       try {
@@ -3944,8 +4036,8 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v1.0';
-const BUILD_DATE = '7 czerwca 2026, 00:20';
+const BUILD_VERSION = 'v1.1';
+const BUILD_DATE = '20 lipiec 2026, 02:42';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
