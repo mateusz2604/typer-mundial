@@ -552,36 +552,16 @@ nav::-webkit-scrollbar { display: none; }
     width:100%;max-width:420px;
     background:linear-gradient(135deg,#0d1a00,#0a1500);
     border:1px solid rgba(0,200,83,.4);
-    border-radius:16px;padding:20px 24px;
+    border-radius:16px;padding:16px 20px;
     margin-bottom:24px;text-align:center;
-    box-shadow:0 0 40px rgba(0,200,83,.15),0 0 80px rgba(0,200,83,.06);
+    box-shadow:0 0 40px rgba(0,200,83,.15);
     animation:formIn 0.5s 0.3s cubic-bezier(0.22,1,0.36,1) both;
-    position:relative;overflow:hidden;
   ">
-    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:120px;opacity:.04;pointer-events:none;">🏆</div>
-    <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:8px;">⚽ Mistrzostwa Świata 2026 · Zakończone</div>
-    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:.06em;color:#fff;margin-bottom:4px;">
-      🇪🇸 Hiszpania Mistrzem Świata!
-    </div>
-    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:16px;">
-      104 mecze · 300 goli · Finał: Hiszpania 1:0 Argentyna
-    </div>
-    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:16px;">
-      🥇 Mariusz Staniewski wygrał Typera MŚ 2026 z <strong style="color:var(--green)">93 punktami</strong> i rekordem 17 dokładnych trafień!
-    </div>
-    <a href="#" onclick="document.getElementById('historiaModal').style.display='flex';document.body.style.overflow='hidden';return false;" style="
-      display:inline-block;
-      background:var(--green);color:#000;
-      font-family:'Bebas Neue',sans-serif;
-      font-size:20px;letter-spacing:.08em;
-      padding:12px 32px;border-radius:10px;
-      text-decoration:none;
-      box-shadow:0 0 20px rgba(0,200,83,.4);
-      transition:all .2s;
-    " onmouseover="this.style.background='#00e676';this.style.transform='scale(1.03)'"
-       onmouseout="this.style.background='#00c853';this.style.transform='scale(1)'">
-      🏆 PODSUMOWANIE TURNIEJU
-    </a>
+    <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:6px;">⚽ MŚ 2026 · Zakończone</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.06em;color:#fff;margin-bottom:2px;">🇪🇸 Hiszpania Mistrzem Świata!</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.4);margin-bottom:2px;">Finał: Hiszpania 1:0 Argentyna · po dogrywce</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px;">🥇 Mariusz Staniewski · <strong style="color:var(--green);">93 pkt</strong> · 17 dokładnych</div>
+    <button onclick="showHistoriaModal()" style="background:var(--green);color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.08em;padding:10px 24px;border-radius:10px;cursor:pointer;box-shadow:0 0 20px rgba(0,200,83,.4);">🏆 HISTORIA TURNIEJU →</button>
   </div>
 
   <div class="login-card" id="loginForm">
@@ -707,6 +687,7 @@ nav::-webkit-scrollbar { display: none; }
     <button class="nav-btn" onclick="showPage('drabinka',this)"><span class="emoji">🏆</span> Drabinka</button>
     <button class="nav-btn" onclick="showPage('live',this)"><span class="emoji">🔴</span> Live</button>
     <button class="nav-btn" onclick="showPage('czat',this)"><span class="emoji">💬</span> Czat</button>
+    <button class="nav-btn" onclick="showPage('historia',this)" style="color:var(--gold);"><span class="emoji">🏆</span> Historia</button>
     <button class="nav-btn" onclick="porownajWith=null;showPage('porownaj',this)"><span class="emoji">⚔️</span> Porównaj</button>
     <button class="nav-btn admin-only" onclick="showPage('gracze',this)" style="display:none;" id="nav-gracze"><span class="emoji">👥</span> Gracze<span id="gracze-badge" style="display:none;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:4px;line-height:1.6;"></span></button>
     <button class="nav-btn admin-only" onclick="showPage('mecze',this)" style="display:none;" id="nav-mecze"><span class="emoji">📅</span> Mecze</button>
@@ -1735,6 +1716,15 @@ function isMatchLocked(m) {
   } catch(e) { return false; }
 }
 
+function showHistoriaModal() {
+  document.getElementById('loginHistoriaModal').style.display = 'block';
+}
+function closeLoginHistoria() {
+  document.getElementById('loginHistoriaModal').style.display = 'none';
+}
+window.showHistoriaModal = showHistoriaModal;
+window.closeLoginHistoria = closeLoginHistoria;
+
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -1851,6 +1841,10 @@ function enterApp() {
       } else {
         showWelcomeIfNeeded();
       }
+      if (window._goToHistoria) {
+        window._goToHistoria = false;
+        setTimeout(() => showPage('historia', document.querySelector('.nav-btn[onclick*="historia"]')), 400);
+      }
     }, 800);
   }
 }
@@ -1919,6 +1913,7 @@ function showPage(name, btn) {
   else if (name==='mecze') { setStickyBar('Zapisz mecze 📅', saveMatches); renderMecze(); }
   else if (name==='admin') { setStickyBar('Zapisz wyniki i przelicz punkty ⚡', saveOfficialResults); renderWyniki(); }
   else { setStickyBar(null, null); }
+  if (name==='historia') { setStickyBar(null, null); }
   if (name==='moje') renderMoje();
   if (name==='ranking') renderRanking();
   if (name==='mistrz') renderMistrz();
@@ -4036,8 +4031,8 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 // Wersja i data buildu – aktualizowane przy każdej zmianie
-const BUILD_VERSION = 'v0.55';
-const BUILD_DATE = '5 czerwca 2026, 12:53';
+const BUILD_VERSION = 'v1.4';
+const BUILD_DATE = '22 lipiec 2026, 00:58';
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').then(reg => {
@@ -4083,179 +4078,245 @@ window.applyUpdate = applyUpdate;
 // Inicjuj stopkę po załadowaniu wszystkich deklaracji
 updateVersionDisplay();
 </script>
-<!-- MODAL PODSUMOWANIA TURNIEJU -->
-<div id="historiaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;overflow-y:scroll;-webkit-overflow-scrolling:touch;padding:16px;" onclick="if(event.target===this){this.style.display='none';document.body.style.overflow='';}">
-  <div style="max-width:820px;margin:0 auto;background:#060a06;border:1px solid rgba(0,200,83,.2);border-radius:20px;overflow:hidden;">
+<!-- HISTORIA -->
+<div class="page" id="page-historia">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px;">
+    <p class="page-title" style="margin:0;">🏆 <span>Historia MŚ 2026</span></p>
+  </div>
 
-    <!-- NAGŁÓWEK -->
-    <div style="background:linear-gradient(135deg,#0a1500,#060a06);padding:40px 32px;text-align:center;border-bottom:1px solid rgba(255,255,255,.07);position:relative;">
-      <button onclick="document.getElementById('historiaModal').style.display='none';document.body.style.overflow='';" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#506050;font-size:28px;cursor:pointer;line-height:1;">×</button>
-      <div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#00c853;font-weight:600;margin-bottom:12px;">Typer MŚ 2026 · Wielkie Podsumowanie</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,10vw,80px);letter-spacing:.03em;line-height:.9;color:#e2ece2;margin-bottom:12px;">To był<br/><span style="color:#00c853;">Nasz</span><br/>Turniej</div>
-      <div style="font-size:13px;color:#506050;margin-bottom:24px;">11 czerwca – 19 lipca 2026</div>
-      <div style="display:flex;justify-content:center;gap:32px;flex-wrap:wrap;">
-        <div style="text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#00c853;line-height:1;">104</div><div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.1em;">Mecze</div></div>
-        <div style="text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#00c853;line-height:1;">300</div><div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.1em;">Gole</div></div>
-        <div style="text-align:center;"><div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#00c853;line-height:1;">22</div><div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.1em;">Typerów</div></div>
-      </div>
+  <!-- FINAŁ -->
+  <div style="background:linear-gradient(135deg,#0d1a00,#0a1500);border:1px solid rgba(255,214,0,.3);border-radius:16px;padding:24px;text-align:center;margin-bottom:16px;box-shadow:0 0 40px rgba(255,214,0,.08);">
+    <div style="font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:12px;">⚽ Finał MŚ 2026 · po dogrywce</div>
+    <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;margin-bottom:8px;">
+      <div style="font-size:22px;font-weight:700;">🇪🇸 Hiszpania</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--gold);line-height:1;">1:0</div>
+      <div style="font-size:22px;font-weight:700;">🇦🇷 Argentyna</div>
     </div>
+    <div style="font-size:14px;color:var(--muted);">🏆 Hiszpania Mistrzem Świata 2026!</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;">Mecz o 3. miejsce: 🇫🇷 Francja 4:6 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia</div>
+  </div>
 
-    <div style="padding:32px;display:flex;flex-direction:column;gap:24px;">
+  <!-- PODIUM -->
+  <p style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:12px;">🏆 Podium Typerów</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+    <div style="background:var(--card-bg);border:1px solid rgba(192,192,192,.2);border-radius:14px;padding:16px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:6px;">🥈</div>
+      <div style="font-size:13px;font-weight:700;">Dawid Kacynel</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">LegitnyTyp</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#c0c0c0;line-height:1;">93</div>
+      <div style="font-size:11px;color:var(--muted);">14 dokł.</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1a1400,#0d0a00);border:1px solid rgba(255,214,0,.35);border-radius:14px;padding:16px;text-align:center;box-shadow:0 0 30px rgba(255,214,0,.1);">
+      <div style="font-size:32px;margin-bottom:6px;">🥇</div>
+      <div style="font-size:13px;font-weight:700;">Mariusz Staniewski</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">MISTRZ 👑</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--gold);line-height:1;">93</div>
+      <div style="font-size:11px;color:var(--muted);">17 dokł. rekord!</div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid rgba(205,127,50,.2);border-radius:14px;padding:16px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:6px;">🥉</div>
+      <div style="font-size:13px;font-weight:700;">Dawid Rudnicki</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Rudy81</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#cd7f32;line-height:1;">91</div>
+      <div style="font-size:11px;color:var(--muted);">14 dokł.</div>
+    </div>
+  </div>
 
-      <!-- FINAŁ -->
-      <div style="background:linear-gradient(135deg,#0d1a00,#0a1500);border:1px solid rgba(255,214,0,.25);border-radius:16px;padding:24px;text-align:center;">
-        <div style="font-size:11px;color:#ffd600;text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:16px;">⚽ Finał MŚ 2026 · po dogrywce</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
-          <div style="font-size:22px;font-weight:700;">🇪🇸 Hiszpania</div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;color:#ffd600;line-height:1;">1:0</div>
-          <div style="font-size:22px;font-weight:700;">🇦🇷 Argentyna</div>
-        </div>
-        <div style="font-size:14px;color:#506050;margin-top:8px;">🏆 Hiszpania Mistrzem Świata 2026!</div>
-        <div style="font-size:13px;color:#506050;margin-top:4px;">Mecz o 3. miejsce: 🇫🇷 Francja 4:6 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia</div>
-      </div>
+  <!-- RANKING -->
+  <p style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:10px;">Ranking końcowy</p>
+  <table class="ranking-table" style="margin-bottom:16px;">
+    <thead><tr><th>#</th><th>Gracz</th><th style="text-align:center;">🎯</th><th style="text-align:center;">%</th><th style="text-align:right;">Pkt</th></tr></thead>
+    <tbody>
+      <tr style="background:rgba(255,214,0,.04)"><td class="rank-pos" style="color:#ffd600;">🥇</td><td style="font-weight:600;">Mariusz Staniewski</td><td style="text-align:center;color:var(--gold);">17</td><td style="text-align:center;color:var(--blue);">57%</td><td class="rank-pts">93</td></tr>
+      <tr style="background:rgba(192,192,192,.03)"><td class="rank-pos" style="color:#c0c0c0;">🥈</td><td style="font-weight:600;">Dawid Kacynel</td><td style="text-align:center;color:var(--gold);">14</td><td style="text-align:center;color:var(--blue);">62%</td><td class="rank-pts">93</td></tr>
+      <tr style="background:rgba(205,127,50,.03)"><td class="rank-pos" style="color:#cd7f32;">🥉</td><td style="font-weight:600;">Dawid Rudnicki</td><td style="text-align:center;color:var(--gold);">14</td><td style="text-align:center;color:var(--blue);">61%</td><td class="rank-pts">91</td></tr>
+      <tr><td class="rank-pos">4</td><td>Mateusz Kaczmarczyk</td><td style="text-align:center;color:var(--gold);">13</td><td style="text-align:center;color:var(--blue);">62%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">90</td></tr>
+      <tr><td class="rank-pos">5</td><td>Robert Kujawa</td><td style="text-align:center;color:var(--gold);">12</td><td style="text-align:center;color:var(--blue);">62%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">89</td></tr>
+      <tr><td class="rank-pos">6</td><td>Patryk Smolarek</td><td style="text-align:center;color:var(--gold);">11</td><td style="text-align:center;color:var(--blue);">62%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">87</td></tr>
+      <tr><td class="rank-pos">7</td><td>Dominika Orzechowska</td><td style="text-align:center;color:var(--gold);">12</td><td style="text-align:center;color:var(--blue);">59%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">85</td></tr>
+      <tr><td class="rank-pos">8</td><td>Jarosław Lisiecki</td><td style="text-align:center;color:var(--gold);">11</td><td style="text-align:center;color:var(--blue);">60%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">84</td></tr>
+      <tr><td class="rank-pos">9</td><td>Marcel Menes</td><td style="text-align:center;color:var(--gold);">9</td><td style="text-align:center;color:var(--blue);">62%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">83</td></tr>
+      <tr><td class="rank-pos">10</td><td>Martyna Polerowicz</td><td style="text-align:center;color:var(--gold);">10</td><td style="text-align:center;color:var(--blue);">60%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">82</td></tr>
+      <tr><td class="rank-pos">11</td><td>Kasia Wachowiak</td><td style="text-align:center;color:var(--gold);">9</td><td style="text-align:center;color:var(--blue);">60%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">80</td></tr>
+      <tr><td class="rank-pos">12</td><td>Piotr Smolarek</td><td style="text-align:center;color:var(--gold);">9</td><td style="text-align:center;color:var(--blue);">58%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">78</td></tr>
+      <tr><td class="rank-pos">13</td><td>Tomasz Paśka</td><td style="text-align:center;color:var(--gold);">9</td><td style="text-align:center;color:var(--blue);">57%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">77</td></tr>
+      <tr><td class="rank-pos">14</td><td>Bartosz Smolarek</td><td style="text-align:center;color:var(--gold);">10</td><td style="text-align:center;color:var(--blue);">54%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">76</td></tr>
+      <tr><td class="rank-pos">15</td><td>Krystian Duda</td><td style="text-align:center;color:var(--gold);">7</td><td style="text-align:center;color:var(--blue);">59%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">75</td></tr>
+      <tr><td class="rank-pos">16</td><td>Zachariasz Wielicki</td><td style="text-align:center;color:var(--gold);">9</td><td style="text-align:center;color:var(--blue);">54%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">74</td></tr>
+      <tr><td class="rank-pos">17</td><td>Tomasz Bułakowski</td><td style="text-align:center;color:var(--gold);">11</td><td style="text-align:center;color:var(--blue);">49%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">73</td></tr>
+      <tr><td class="rank-pos">18</td><td>Gracjana Silska</td><td style="text-align:center;color:var(--gold);">8</td><td style="text-align:center;color:var(--blue);">54%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">72</td></tr>
+      <tr><td class="rank-pos">19</td><td>Bartosz Syka</td><td style="text-align:center;color:var(--gold);">9</td><td style="text-align:center;color:var(--blue);">49%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">69</td></tr>
+      <tr><td class="rank-pos">20</td><td>Bartek Cieślewicz</td><td style="text-align:center;color:var(--gold);">6</td><td style="text-align:center;color:var(--blue);">55%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">69</td></tr>
+      <tr><td class="rank-pos">21</td><td>Tomasz Wachowiak</td><td style="text-align:center;color:var(--gold);">8</td><td style="text-align:center;color:var(--blue);">45%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">63</td></tr>
+      <tr><td class="rank-pos">22</td><td>Sebastian Fajkowski</td><td style="text-align:center;color:var(--gold);">5</td><td style="text-align:center;color:var(--blue);">51%</td><td class="rank-pts" style="color:var(--muted);font-size:20px;">63</td></tr>
+    </tbody>
+  </table>
 
-      <!-- PODIUM -->
-      <div>
-        <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#00c853;font-weight:600;margin-bottom:16px;">🏆 Podium Typerów</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-          <div style="background:#0c120c;border:1px solid rgba(192,192,192,.25);border-radius:14px;padding:20px;text-align:center;">
-            <div style="font-size:36px;margin-bottom:8px;">🥈</div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Dawid Kacynel</div>
-            <div style="font-size:11px;color:#506050;margin-bottom:8px;">LegitnyTyp</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#c0c0c0;line-height:1;">93</div>
-            <div style="font-size:11px;color:#506050;">14 dokł. · 62%</div>
-          </div>
-          <div style="background:linear-gradient(135deg,#1a1400,#0d0a00);border:1px solid rgba(255,214,0,.35);border-radius:14px;padding:20px;text-align:center;box-shadow:0 0 40px rgba(255,214,0,.1);">
-            <div style="font-size:36px;margin-bottom:8px;">🥇</div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Mariusz Staniewski</div>
-            <div style="font-size:11px;color:#506050;margin-bottom:8px;">Mariusz · MISTRZ</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#ffd600;line-height:1;">93</div>
-            <div style="font-size:11px;color:#506050;">17 dokł. · 57% 👑</div>
-          </div>
-          <div style="background:#0c120c;border:1px solid rgba(205,127,50,.25);border-radius:14px;padding:20px;text-align:center;">
-            <div style="font-size:36px;margin-bottom:8px;">🥉</div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:4px;">Dawid Rudnicki</div>
-            <div style="font-size:11px;color:#506050;margin-bottom:8px;">Rudy81</div>
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:48px;color:#cd7f32;line-height:1;">91</div>
-            <div style="font-size:11px;color:#506050;">14 dokł. · 61%</div>
-          </div>
-        </div>
-      </div>
+  <!-- NAGRODY -->
+  <p style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:10px;">Nagrody indywidualne</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🎯</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Snajper turnieju</div><div style="font-size:14px;font-weight:700;color:var(--gold);">Mariusz Staniewski</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Rekordowe 17 dokładnych!</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🔥</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepsza seria</div><div style="font-size:14px;font-weight:700;color:var(--green);">13 z rzędu</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Dawid K. · Dawid R. · Robert K.</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">📊</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Król wyników</div><div style="font-size:14px;font-weight:700;color:#4d9fff;">Krystian Duda</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">54 trafione wyniki</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">💬</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">MVP czatu</div><div style="font-size:14px;font-weight:700;color:var(--green);">Martyna Polerowicz</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Liderka dnia 1, queen komentarzy</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">⚡</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepszy start</div><div style="font-size:14px;font-weight:700;color:var(--gold);">Martyna Polerowicz</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">23 pkt w I kolejce grupowej</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🚀</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Największy awans</div><div style="font-size:14px;font-weight:700;color:var(--green);">Robert Kujawa &amp; Bartosz Smolarek</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">+6 miejsc w górę w pucharze!</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">📉</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Największy zjazd</div><div style="font-size:14px;font-weight:700;color:var(--red);">Martyna Polerowicz</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Z 2. miejsca na 10. po pucharze (-8 miejsc)</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🏆</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Król pucharu</div><div style="font-size:14px;font-weight:700;color:var(--gold);">Robert Kujawa</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">33 pkt w fazie pucharowej!</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🧊</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepsza końcówka</div><div style="font-size:14px;font-weight:700;color:var(--green);">Bartosz Smolarek</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">5 pkt w półf./3m./finale – max możliwy</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🎖️</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepsza skut. w pucharze</div><div style="font-size:14px;font-weight:700;color:#4d9fff;">Bartek Cieślewicz</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">70% skuteczności w fazie pucharowej</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🦾</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Żelazny typer</div><div style="font-size:14px;font-weight:700;color:var(--green);">Marcel, Dawid K., Robert, Sebastian</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">100% wpisanych typowań – 104/104!</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🤦</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najdroższe pudło</div><div style="font-size:14px;font-weight:700;color:var(--red);">Bartosz Syka i Martyna</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Pudłowali w Hiszp. 2:1 Belgia gdy 11 trafiło</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🧠</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Mistrz typów specjalnych</div><div style="font-size:14px;font-weight:700;color:#c084fc;">Marcel, Gracjana, Dawid K.</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">2/4 typów specjalnych – najlepszy wynik!</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">⚽</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Rekord meczu</div><div style="font-size:14px;font-weight:700;">Francja 3:0 Irak</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">14 typerów trafiło dokładnie!</div></div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🏁</div><div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Trafili finał</div><div style="font-size:14px;font-weight:700;">4 typerów</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Dawid R. · Patryk S. · Tomasz B. · Bartosz S.</div></div>
+</div>
 
-      <!-- PEŁNY RANKING -->
-      <div>
-        <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#00c853;font-weight:600;margin-bottom:12px;">Ranking końcowy</div>
-        <div style="display:flex;flex-direction:column;gap:4px;">
-          ${[
-            ['🥇','Mariusz Staniewski','Mariusz','93','17 dokł. · 57%','gold'],
-            ['🥈','Dawid Kacynel','LegitnyTyp','93','14 dokł. · 62%','silver'],
-            ['🥉','Dawid Rudnicki','Rudy81','91','14 dokł. · 61%','bronze'],
-            ['4','Mateusz Kaczmarczyk','Dlxptcz','90','13 dokł. · 62%',''],
-            ['5','Robert Kujawa','Robert_kujawa','89','12 dokł. · 62%',''],
-            ['6','Patryk Smolarek','Smoluss','87','11 dokł. · 62%',''],
-            ['7','Dominika Orzechowska','Dominia1285','85','12 dokł. · 59%',''],
-            ['8','Jarosław Lisiecki','Lisek','84','11 dokł. · 60%',''],
-            ['9','Marcel Menes','Felek','83','9 dokł. · 62%',''],
-            ['10','Martyna Polerowicz','MAR7YN4','82','10 dokł. · 60%',''],
-            ['11','Kasia Wachowiak','Kaska1992@','80','9 dokł. · 60%',''],
-            ['12','Piotr Smolarek','PiotrS','78','9 dokł. · 58%',''],
-            ['13','Tomasz Paśka','Tomaj','77','9 dokł. · 57%',''],
-            ['14','Bartosz Smolarek','Baryła1993','76','10 dokł. · 54%',''],
-            ['15','Krystian Duda','Krychu','75','7 dokł. · 59%',''],
-            ['16','Zachariasz Wielicki','Zachar','74','9 dokł. · 54%',''],
-            ['17','Tomasz Bułakowski','Tomibula','73','11 dokł. · 49%',''],
-            ['18','Gracjana Silska','Grażka','72','8 dokł. · 54%',''],
-            ['19','Bartosz Syka','Bartas99','69','9 dokł. · 49%',''],
-            ['20','Bartek Cieślewicz','BartekC','69','6 dokł. · 55%',''],
-            ['21','Tomasz Wachowiak','','63','8 dokł. · 45%',''],
-            ['22','Sebastian Fajkowski','seba0478','63','5 dokł. · 51%',''],
-          ].map(([pos,name,nick,pts,detail,medal]) => `
-            <div style="display:grid;grid-template-columns:44px 1fr auto auto;align-items:center;gap:12px;padding:10px 14px;background:#0c120c;border:1px solid ${medal==='gold'?'rgba(255,214,0,.2)':medal==='silver'?'rgba(192,192,192,.15)':medal==='bronze'?'rgba(205,127,50,.15)':'rgba(255,255,255,.05)'};border-radius:10px;">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:#506050;text-align:center;">${pos}</div>
-              <div><div style="font-size:14px;font-weight:600;">${name}</div><div style="font-size:11px;color:#506050;">${nick}</div></div>
-              <div style="font-size:11px;color:#506050;white-space:nowrap;">${detail}</div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:${medal==='gold'?'#ffd600':medal==='silver'?'#c0c0c0':medal==='bronze'?'#cd7f32':'#00c853'};min-width:48px;text-align:right;">${pts}</div>
-            </div>`).join('')}
-        </div>
-      </div>
+  <!-- TYPY SPECJALNE -->
+  <p style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:10px;">Typy specjalne – rozliczenie</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">🏆 Mistrz turnieju → 🇪🇸 Hiszpania</div>
+      <div style="font-size:12px;color:var(--red);">❌ Nikt nie trafił! Portugalia (4), Francja (2), Argentyna (1)</div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid rgba(0,200,83,.2);border-radius:12px;padding:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">⚽ Król strzelców → Kylian Mbappé</div>
+      <div style="font-size:12px;color:var(--green);">✅ Trafili: Marcel Menes, Gracjana Silska, Dawid Kacynel</div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid rgba(0,200,83,.2);border-radius:12px;padding:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">🌟 Największa niespodzianka → 🇳🇴 Norwegia</div>
+      <div style="font-size:12px;color:var(--green);">✅ Trafili: Mateusz Kaczmarczyk, Marcel Menes</div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid rgba(0,200,83,.2);border-radius:12px;padding:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;">😤 Największe rozczarowanie → 🇩🇪 Niemcy</div>
+      <div style="font-size:12px;color:var(--green);">✅ Trafił: Dawid Rudnicki</div>
+    </div>
+  </div>
 
-      <!-- CIEKAWOSTKI -->
-      <div>
-        <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#00c853;font-weight:600;margin-bottom:12px;">Nagrody indywidualne</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;">
-            <div style="font-size:24px;margin-bottom:8px;">🎯</div>
-            <div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Snajper turnieju</div>
-            <div style="font-size:15px;font-weight:700;color:#ffd600;">Mariusz Staniewski</div>
-            <div style="font-size:12px;color:#506050;margin-top:4px;">Rekordowe 17 dokładnych trafień</div>
-          </div>
-          <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;">
-            <div style="font-size:24px;margin-bottom:8px;">🔥</div>
-            <div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Najlepsza seria</div>
-            <div style="font-size:15px;font-weight:700;color:#00c853;">13 z rzędu</div>
-            <div style="font-size:12px;color:#506050;margin-top:4px;">Dawid K., Dawid R., Robert K.</div>
-          </div>
-          <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;">
-            <div style="font-size:24px;margin-bottom:8px;">📊</div>
-            <div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Król wyników</div>
-            <div style="font-size:15px;font-weight:700;color:#4d9fff;">Krystian Duda</div>
-            <div style="font-size:12px;color:#506050;margin-top:4px;">54 trafione wyniki (bez dokładnych)</div>
-          </div>
-          <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;">
-            <div style="font-size:24px;margin-bottom:8px;">💬</div>
-            <div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">MVP czatu</div>
-            <div style="font-size:15px;font-weight:700;color:#00c853;">Martyna Polerowicz</div>
-            <div style="font-size:12px;color:#506050;margin-top:4px;">Liderka dnia 1, queen komentarzy</div>
-          </div>
-          <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;">
-            <div style="font-size:24px;margin-bottom:8px;">⚽</div>
-            <div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Rekord meczu</div>
-            <div style="font-size:15px;font-weight:700;">Francja 3:0 Irak</div>
-            <div style="font-size:12px;color:#506050;margin-top:4px;">14 typerów trafiło dokładnie!</div>
-          </div>
-          <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:16px;">
-            <div style="font-size:24px;margin-bottom:8px;">🏁</div>
-            <div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Trafili finał</div>
-            <div style="font-size:15px;font-weight:700;">4 typerów</div>
-            <div style="font-size:12px;color:#506050;margin-top:4px;">Dawid R., Patryk S., Tomasz B., Bartosz S.</div>
-          </div>
-        </div>
-      </div>
+  <div style="margin-top:24px;text-align:center;padding:20px;background:var(--card-bg);border:1px solid rgba(0,200,83,.2);border-radius:14px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--green);letter-spacing:.06em;">Typer MŚ 2026</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:4px;">104 mecze · 300 goli · 22 typerów · 🇪🇸 Hiszpania mistrzem świata</div>
+    <div style="font-size:14px;color:var(--green);font-weight:600;margin-top:12px;">Dziękujemy za udział i zabawę!</div><div style="font-size:13px;color:var(--muted);margin-top:4px;">Pozdrawiamy Dawid &amp; Mateusz! ⚽</div>
+  </div>
+</div>
 
-      <!-- CYTATY -->
-      <div>
-        <div style="font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#00c853;font-weight:600;margin-bottom:12px;">💬 Najlepsze cytaty z czatu</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <div style="background:#0c120c;border-left:3px solid #00c853;border-radius:0 10px 10px 0;padding:12px 16px;">
-            <div style="font-size:11px;color:#00c853;font-weight:600;margin-bottom:4px;">Martyna Polerowicz · dzień 1</div>
-            <div style="font-size:14px;font-style:italic;">"U mnie 3/3 😅😅😅 Spokojnie. Jeszcze 100 meczów zostało 😅"</div>
-          </div>
-          <div style="background:#0c120c;border-left:3px solid #00c853;border-radius:0 10px 10px 0;padding:12px 16px;">
-            <div style="font-size:11px;color:#00c853;font-weight:600;margin-bottom:4px;">Mateusz Kaczmarczyk · po Niemcy 7:1</div>
-            <div style="font-size:14px;font-style:italic;">"Ja chciałem dałem 6:1 ale pół godziny przed meczem zmieniłem na 5:0 😂"</div>
-          </div>
-          <div style="background:#0c120c;border-left:3px solid #00c853;border-radius:0 10px 10px 0;padding:12px 16px;">
-            <div style="font-size:11px;color:#00c853;font-weight:600;margin-bottom:4px;">Martyna Polerowicz · o Hiszpanii</div>
-            <div style="font-size:14px;font-style:italic;">"Hiszpania ŻENUŁA🤣 Bambikom bramki nie potrafią strzelić🤣 Wielka Hiszpania🤣"</div>
-          </div>
-          <div style="background:#0c120c;border-left:3px solid #00c853;border-radius:0 10px 10px 0;padding:12px 16px;">
-            <div style="font-size:11px;color:#00c853;font-weight:600;margin-bottom:4px;">Gracjana Silska · koniec turnieju</div>
-            <div style="font-size:14px;font-style:italic;">"Zostałeś... 🤷‍♀️😅😂"</div>
-          </div>
+
+<!-- MODAL HISTORIA (dostępny bez logowania) -->
+<div id="loginHistoriaModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99999;overflow-y:auto;-webkit-overflow-scrolling:touch;" onclick="if(event.target===this)closeLoginHistoria()">
+  <div style="max-width:600px;margin:0 auto;padding:16px;min-height:100vh;">
+    <div style="background:var(--bg2);border:1px solid rgba(0,200,83,.2);border-radius:16px;overflow:hidden;">
+
+      <!-- NAGŁÓWEK -->
+      <div style="background:linear-gradient(135deg,#0a1500,#060a06);padding:28px 24px;text-align:center;position:relative;border-bottom:1px solid rgba(255,255,255,.07);">
+        <button onclick="closeLoginHistoria()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#506050;font-size:26px;cursor:pointer;">×</button>
+        <div style="font-size:10px;color:#00c853;text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:10px;">Typer MŚ 2026 · Historia</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(40px,10vw,64px);line-height:.9;margin-bottom:10px;">Hiszpania<br/><span style="color:#00c853;">Mistrzem</span><br/>Świata 2026!</div>
+        <div style="display:flex;justify-content:center;gap:24px;margin-top:16px;flex-wrap:wrap;">
+          <div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#00c853;line-height:1;">104</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.1em;">Mecze</div></div>
+          <div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#00c853;line-height:1;">300</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.1em;">Gole</div></div>
+          <div><div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#00c853;line-height:1;">22</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.1em;">Typerów</div></div>
         </div>
       </div>
 
-      <!-- STOPKA -->
-      <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,.07);">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#00c853;letter-spacing:.06em;">Typer MŚ 2026</div>
-        <div style="font-size:13px;color:#506050;margin-top:4px;">104 mecze · 300 goli · 22 typerów · 🇪🇸 Hiszpania mistrzem świata</div>
-        <div style="font-size:12px;color:#506050;margin-top:4px;">Mistrz: Mariusz Staniewski 🥇 · 93 pkt · 17 dokładnych</div>
-        <button onclick="document.getElementById('historiaModal').style.display='none';document.body.style.overflow='';" style="margin-top:20px;background:#00c853;border:none;border-radius:10px;color:#000;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.06em;padding:12px 32px;cursor:pointer;">Zamknij ×</button>
-      </div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:20px;">
 
+        <!-- FINAŁ -->
+        <div style="background:linear-gradient(135deg,#0d1a00,#0a1500);border:1px solid rgba(255,214,0,.25);border-radius:14px;padding:20px;text-align:center;">
+          <div style="font-size:10px;color:#ffd600;text-transform:uppercase;letter-spacing:.2em;font-weight:600;margin-bottom:12px;">⚽ Finał · po dogrywce</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;">
+            <div style="font-size:18px;font-weight:700;">🇪🇸 Hiszpania</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;color:#ffd600;line-height:1;">1:0</div>
+            <div style="font-size:18px;font-weight:700;">🇦🇷 Argentyna</div>
+          </div>
+          
+          <div style="margin-top:12px;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;"><div style="font-size:11px;color:#506050;text-transform:uppercase;letter-spacing:.1em;width:100%;text-align:center;margin-bottom:4px;">🥉 Mecz o 3. miejsce</div><div style="font-size:16px;font-weight:700;">🇫🇷 Francja</div><div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:#cd7f32;line-height:1;">4:6</div><div style="font-size:16px;font-weight:700;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Anglia</div></div>
+        </div>
+
+        <!-- PODIUM -->
+        <div>
+          <div style="font-size:10px;color:#00c853;text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:12px;">🏆 Podium Typerów</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div style="background:#0c120c;border:1px solid rgba(192,192,192,.2);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:28px;margin-bottom:4px;">🥈</div>
+              <div style="font-size:12px;font-weight:700;">Dawid Kacynel</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#c0c0c0;line-height:1;">93</div>
+              <div style="font-size:10px;color:#506050;">14 dokł.</div>
+            </div>
+            <div style="background:linear-gradient(135deg,#1a1400,#0d0a00);border:1px solid rgba(255,214,0,.3);border-radius:12px;padding:14px;text-align:center;box-shadow:0 0 20px rgba(255,214,0,.08);">
+              <div style="font-size:28px;margin-bottom:4px;">🥇</div>
+              <div style="font-size:12px;font-weight:700;">Mariusz Staniewski</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#ffd600;line-height:1;">93</div>
+              <div style="font-size:10px;color:#506050;">17 dokł. 👑</div>
+            </div>
+            <div style="background:#0c120c;border:1px solid rgba(205,127,50,.2);border-radius:12px;padding:14px;text-align:center;">
+              <div style="font-size:28px;margin-bottom:4px;">🥉</div>
+              <div style="font-size:12px;font-weight:700;">Dawid Rudnicki</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:36px;color:#cd7f32;line-height:1;">91</div>
+              <div style="font-size:10px;color:#506050;">14 dokł.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RANKING -->
+        <div>
+          <div style="font-size:10px;color:#00c853;text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:10px;">Ranking końcowy</div>
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,214,0,.2);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">🥇</div><div style="flex:1;font-size:13px;font-weight:600;">Mariusz Staniewski</div><div style="font-size:12px;color:#506050;white-space:nowrap;">17 dokł. · 57%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#ffd600;min-width:40px;text-align:right;">93</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(192,192,192,.15);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">🥈</div><div style="flex:1;font-size:13px;font-weight:600;">Dawid Kacynel</div><div style="font-size:12px;color:#506050;white-space:nowrap;">14 dokł. · 62%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#c0c0c0;min-width:40px;text-align:right;">93</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(205,127,50,.15);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">🥉</div><div style="flex:1;font-size:13px;font-weight:600;">Dawid Rudnicki</div><div style="font-size:12px;color:#506050;white-space:nowrap;">14 dokł. · 61%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#cd7f32;min-width:40px;text-align:right;">91</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">4</div><div style="flex:1;font-size:13px;font-weight:600;">Mateusz Kaczmarczyk</div><div style="font-size:12px;color:#506050;white-space:nowrap;">13 dokł. · 62%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">90</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">5</div><div style="flex:1;font-size:13px;font-weight:600;">Robert Kujawa</div><div style="font-size:12px;color:#506050;white-space:nowrap;">12 dokł. · 62%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">89</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">6</div><div style="flex:1;font-size:13px;font-weight:600;">Patryk Smolarek</div><div style="font-size:12px;color:#506050;white-space:nowrap;">11 dokł. · 62%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">87</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">7</div><div style="flex:1;font-size:13px;font-weight:600;">Dominika Orzechowska</div><div style="font-size:12px;color:#506050;white-space:nowrap;">12 dokł. · 59%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">85</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">8</div><div style="flex:1;font-size:13px;font-weight:600;">Jarosław Lisiecki</div><div style="font-size:12px;color:#506050;white-space:nowrap;">11 dokł. · 60%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">84</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">9</div><div style="flex:1;font-size:13px;font-weight:600;">Marcel Menes</div><div style="font-size:12px;color:#506050;white-space:nowrap;">9 dokł. · 62%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">83</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">10</div><div style="flex:1;font-size:13px;font-weight:600;">Martyna Polerowicz</div><div style="font-size:12px;color:#506050;white-space:nowrap;">10 dokł. · 60%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">82</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">11</div><div style="flex:1;font-size:13px;font-weight:600;">Kasia Wachowiak</div><div style="font-size:12px;color:#506050;white-space:nowrap;">9 dokł. · 60%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">80</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">12</div><div style="flex:1;font-size:13px;font-weight:600;">Piotr Smolarek</div><div style="font-size:12px;color:#506050;white-space:nowrap;">9 dokł. · 58%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">78</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">13</div><div style="flex:1;font-size:13px;font-weight:600;">Tomasz Paśka</div><div style="font-size:12px;color:#506050;white-space:nowrap;">9 dokł. · 57%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">77</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">14</div><div style="flex:1;font-size:13px;font-weight:600;">Bartosz Smolarek</div><div style="font-size:12px;color:#506050;white-space:nowrap;">10 dokł. · 54%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">76</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">15</div><div style="flex:1;font-size:13px;font-weight:600;">Krystian Duda</div><div style="font-size:12px;color:#506050;white-space:nowrap;">7 dokł. · 59%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">75</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">16</div><div style="flex:1;font-size:13px;font-weight:600;">Zachariasz Wielicki</div><div style="font-size:12px;color:#506050;white-space:nowrap;">9 dokł. · 54%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">74</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">17</div><div style="flex:1;font-size:13px;font-weight:600;">Tomasz Bułakowski</div><div style="font-size:12px;color:#506050;white-space:nowrap;">11 dokł. · 49%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">73</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">18</div><div style="flex:1;font-size:13px;font-weight:600;">Gracjana Silska</div><div style="font-size:12px;color:#506050;white-space:nowrap;">8 dokł. · 54%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">72</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">19</div><div style="flex:1;font-size:13px;font-weight:600;">Bartosz Syka</div><div style="font-size:12px;color:#506050;white-space:nowrap;">9 dokł. · 49%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">69</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">20</div><div style="flex:1;font-size:13px;font-weight:600;">Bartek Cieślewicz</div><div style="font-size:12px;color:#506050;white-space:nowrap;">6 dokł. · 55%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">69</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">21</div><div style="flex:1;font-size:13px;font-weight:600;">Tomasz Wachowiak</div><div style="font-size:12px;color:#506050;white-space:nowrap;">8 dokł. · 45%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">63</div></div>
+<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:#0c120c;border:1px solid rgba(255,255,255,.05);border-radius:8px;"><div style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:#506050;width:28px;text-align:center;flex-shrink:0;">22</div><div style="flex:1;font-size:13px;font-weight:600;">Sebastian Fajkowski</div><div style="font-size:12px;color:#506050;white-space:nowrap;">5 dokł. · 51%</div><div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00c853;min-width:40px;text-align:right;">63</div></div>
+          </div>
+        </div>
+
+        <!-- NAGRODY -->
+        <div>
+          <div style="font-size:10px;color:#00c853;text-transform:uppercase;letter-spacing:.15em;font-weight:600;margin-bottom:10px;">Nagrody indywidualne</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🎯</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Snajper turnieju</div><div style="font-size:13px;font-weight:700;color:#ffd600;">Mariusz Staniewski</div><div style="font-size:11px;color:#506050;margin-top:2px;">Rekordowe 17 dokładnych!</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🔥</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepsza seria</div><div style="font-size:13px;font-weight:700;color:#00c853;">13 z rzędu</div><div style="font-size:11px;color:#506050;margin-top:2px;">Dawid K. · Dawid R. · Robert K.</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">📊</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Król wyników</div><div style="font-size:13px;font-weight:700;color:#4d9fff;">Krystian Duda</div><div style="font-size:11px;color:#506050;margin-top:2px;">54 trafione wyniki</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">💬</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">MVP czatu</div><div style="font-size:13px;font-weight:700;color:#00c853;">Martyna Polerowicz</div><div style="font-size:11px;color:#506050;margin-top:2px;">Liderka dnia 1, queen komentarzy</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">⚡</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepszy start</div><div style="font-size:13px;font-weight:700;color:#ffd600;">Martyna Polerowicz</div><div style="font-size:11px;color:#506050;margin-top:2px;">23 pkt w I kolejce grupowej</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🚀</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Największy awans</div><div style="font-size:13px;font-weight:700;color:#00c853;">Robert Kujawa &amp; Bartosz Smolarek</div><div style="font-size:11px;color:#506050;margin-top:2px;">+6 miejsc w górę w pucharze!</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">📉</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Największy zjazd</div><div style="font-size:13px;font-weight:700;color:#ff4040;">Martyna Polerowicz</div><div style="font-size:11px;color:#506050;margin-top:2px;">Z 2. miejsca na 10. po pucharze (-8 miejsc)</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🏆</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Król pucharu</div><div style="font-size:13px;font-weight:700;color:#ffd600;">Robert Kujawa</div><div style="font-size:11px;color:#506050;margin-top:2px;">33 pkt w fazie pucharowej!</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🧊</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepsza końcówka</div><div style="font-size:13px;font-weight:700;color:#00c853;">Bartosz Smolarek</div><div style="font-size:11px;color:#506050;margin-top:2px;">5 pkt w półf./3m./finale – max możliwy</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🎖️</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najlepsza skut. w pucharze</div><div style="font-size:13px;font-weight:700;color:#4d9fff;">Bartek Cieślewicz</div><div style="font-size:11px;color:#506050;margin-top:2px;">70% skuteczności w fazie pucharowej</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🦾</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Żelazny typer</div><div style="font-size:13px;font-weight:700;color:#00c853;">Marcel, Dawid K., Robert, Sebastian</div><div style="font-size:11px;color:#506050;margin-top:2px;">100% wpisanych typowań – 104/104!</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🤦</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Najdroższe pudło</div><div style="font-size:13px;font-weight:700;color:#ff4040;">Bartosz Syka i Martyna</div><div style="font-size:11px;color:#506050;margin-top:2px;">Pudłowali w Hiszp. 2:1 Belgia gdy 11 trafiło</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🧠</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Mistrz typów specjalnych</div><div style="font-size:13px;font-weight:700;color:#c084fc;">Marcel, Gracjana, Dawid K.</div><div style="font-size:11px;color:#506050;margin-top:2px;">2/4 typów specjalnych – najlepszy wynik!</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">⚽</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Rekord meczu</div><div style="font-size:13px;font-weight:700;">Francja 3:0 Irak</div><div style="font-size:11px;color:#506050;margin-top:2px;">14 typerów trafiło dokładnie!</div></div>
+  <div style="background:#0c120c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;"><div style="font-size:20px;margin-bottom:4px;">🏁</div><div style="font-size:10px;color:#506050;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;">Trafili finał</div><div style="font-size:13px;font-weight:700;">4 typerów</div><div style="font-size:11px;color:#506050;margin-top:2px;">Dawid R. · Patryk S. · Tomasz B. · Bartosz S.</div></div>
+</div>
+        </div>
+
+        <div style="text-align:center;padding:16px;background:#0c120c;border:1px solid rgba(0,200,83,.2);border-radius:12px;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#00c853;letter-spacing:.06em;">Typer MŚ 2026</div>
+          <div style="font-size:12px;color:#506050;margin-top:4px;">104 mecze · 300 goli · 22 typerów · 🇪🇸 Hiszpania mistrzem świata</div><div style="font-size:13px;color:#00c853;font-weight:600;margin-top:10px;">Dziękujemy za udział i zabawę!</div><div style="font-size:13px;color:#506050;margin-top:2px;">Pozdrawiamy Dawid &amp; Mateusz! ⚽</div>
+          <button onclick="closeLoginHistoria()" style="margin-top:14px;background:#00c853;border:none;border-radius:8px;color:#000;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:.06em;padding:10px 28px;cursor:pointer;">Zamknij ×</button>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>
 
 </body>
-</html>
